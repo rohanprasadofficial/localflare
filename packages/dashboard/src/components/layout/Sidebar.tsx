@@ -8,7 +8,6 @@ import {
   Folder01Icon,
   Layers01Icon,
   TaskDone01Icon,
-  Settings02Icon,
   ArrowLeft01Icon,
   ArrowRight01Icon,
   Home01Icon,
@@ -240,28 +239,13 @@ export function Sidebar() {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="p-2 border-t border-sidebar-border">
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            cn(
-              "flex items-center gap-2.5 px-2.5 py-2 rounded-md text-[13px] font-medium transition-colors",
-              isCollapsed && "justify-center px-2",
-              isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-            )
-          }
-        >
-          <HugeiconsIcon icon={Settings02Icon} className="size-4 shrink-0" strokeWidth={2} />
-          {!isCollapsed && <span>Settings</span>}
-        </NavLink>
-        {!isCollapsed && (
-          <p className="mt-2 px-2.5 text-[10px] text-muted-foreground">
+      {!isCollapsed && (
+        <div className="p-3 border-t border-sidebar-border">
+          <p className="px-2.5 text-[10px] text-muted-foreground">
             Localflare v0.1.2
           </p>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
   )
 }

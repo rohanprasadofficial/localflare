@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Database02Icon,
@@ -14,7 +14,7 @@ import { bindingsApi } from "@/lib/api"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatsCard, StatsCardGroup } from "@/components/ui/stats-card"
 import { DataTableLoading } from "@/components/ui/data-table"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { LandingPage } from "@/components/landing/LandingPage"
 import { cn } from "@/lib/utils"
 
 const services = [
@@ -76,10 +76,16 @@ const services = [
 ]
 
 export function Home() {
+  const queryClient = useQueryClient()
   const { data: bindings, isLoading, error } = useQuery({
     queryKey: ["bindings"],
     queryFn: bindingsApi.getAll,
+    retry: false,
   })
+
+  const handleRetry = () => {
+    queryClient.invalidateQueries({ queryKey: ["bindings"] })
+  }
 
   if (isLoading) {
     return (
@@ -90,25 +96,7 @@ export function Home() {
   }
 
   if (error) {
-    return (
-      <div className="h-full flex items-center justify-center p-6">
-        <Card className="max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive text-base">
-              Connection Error
-            </CardTitle>
-            <CardDescription>
-              Could not connect to Localflare server. Make sure it's running.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="p-3 rounded-md bg-muted text-xs overflow-auto">
-              {String(error)}
-            </pre>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <LandingPage onRetry={handleRetry} />
   }
 
   // Calculate totals
