@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -6,6 +6,10 @@ import {
   File01Icon,
   Delete02Icon,
   Download01Icon,
+  Image01Icon,
+  Video01Icon,
+  FileAttachmentIcon,
+  CodeIcon,
 } from "@hugeicons/core-free-icons"
 import { r2Api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -13,9 +17,186 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatsCard, StatsCardGroup } from "@/components/ui/stats-card"
 import { SearchInput } from "@/components/ui/search-input"
-import { DataTable, DataTableLoading, type Column } from "@/components/ui/data-table"
 import { EmptyState } from "@/components/ui/empty-state"
 import { cn, formatBytes, formatDate } from "@/lib/utils"
+
+// Get file type from content type or filename
+function getFileType(contentType?: string, filename?: string): 'image' | 'video' | 'audio' | 'pdf' | 'json' | 'text' | 'code' | 'other' {
+  const ct = contentType?.toLowerCase() || ''
+  const ext = filename?.split('.').pop()?.toLowerCase() || ''
+
+  if (ct.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'].includes(ext)) return 'image'
+  if (ct.startsWith('video/') || ['mp4', 'webm', 'mov', 'avi'].includes(ext)) return 'video'
+  if (ct.startsWith('audio/') || ['mp3', 'wav', 'ogg', 'flac'].includes(ext)) return 'audio'
+  if (ct === 'application/pdf' || ext === 'pdf') return 'pdf'
+  if (ct === 'application/json' || ext === 'json') return 'json'
+  if (ct.startsWith('text/') || ['txt', 'md', 'csv', 'xml', 'html', 'css'].includes(ext)) return 'text'
+  if (['js', 'ts', 'jsx', 'tsx', 'py', 'rb', 'go', 'rs', 'java', 'c', 'cpp', 'h'].includes(ext)) return 'code'
+  return 'other'
+}
+
+// Get icon for file type
+function getFileIcon(contentType?: string, filename?: string) {
+  const type = getFileType(contentType, filename)
+  switch (type) {
+    case 'image': return Image01Icon
+    case 'video': return Video01Icon
+    case 'json':
+    case 'code': return CodeIcon
+    case 'pdf': return FileAttachmentIcon
+    default: return File01Icon
+  }
+}
+
+// Preview component
+function FilePreview({ bucket, objectKey, contentType, size }: { bucket: string; objectKey: string; contentType?: string; size: number }) {
+  const [textContent, setTextContent] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fileType = getFileType(contentType, objectKey)
+  const objectUrl = r2Api.getObjectUrl(bucket, objectKey)
+
+  // Load text/json content
+  useEffect(() => {
+    if ((fileType === 'text' || fileType === 'json' || fileType === 'code') && size < 1024 * 1024) { // < 1MB
+      setLoading(true)
+      setError(null)
+      r2Api.getObjectContent(bucket, objectKey)
+        .then(async (response) => {
+          const text = await response.text()
+          setTextContent(text)
+        })
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false))
+    }
+  }, [bucket, objectKey, fileType, size])
+
+  // Image preview
+  if (fileType === 'image') {
+    return (
+      <div className="flex items-center justify-center bg-muted/30 rounded-lg p-4 min-h-[200px]">
+        <img
+          src={objectUrl}
+          alt={objectKey}
+          className="max-w-full max-h-[400px] object-contain rounded"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none'
+          }}
+        />
+      </div>
+    )
+  }
+
+  // Video preview
+  if (fileType === 'video') {
+    return (
+      <div className="flex items-center justify-center bg-muted/30 rounded-lg p-4">
+        <video
+          src={objectUrl}
+          controls
+          className="max-w-full max-h-[400px] rounded"
+        >
+          Your browser does not support video playback.
+        </video>
+      </div>
+    )
+  }
+
+  // Audio preview
+  if (fileType === 'audio') {
+    return (
+      <div className="flex items-center justify-center bg-muted/30 rounded-lg p-4">
+        <audio src={objectUrl} controls className="w-full max-w-md">
+          Your browser does not support audio playback.
+        </audio>
+      </div>
+    )
+  }
+
+  // PDF preview (iframe)
+  if (fileType === 'pdf') {
+    return (
+      <div className="bg-muted/30 rounded-lg overflow-hidden">
+        <iframe
+          src={objectUrl}
+          className="w-full h-[500px] border-0"
+          title={objectKey}
+        />
+      </div>
+    )
+  }
+
+  // Text/JSON/Code preview
+  if (fileType === 'text' || fileType === 'json' || fileType === 'code') {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center bg-muted/30 rounded-lg p-8 min-h-[200px]">
+          <span className="text-muted-foreground">Loading content...</span>
+        </div>
+      )
+    }
+
+    if (error) {
+      return (
+        <div className="flex items-center justify-center bg-muted/30 rounded-lg p-8 min-h-[200px]">
+          <span className="text-destructive">Failed to load: {error}</span>
+        </div>
+      )
+    }
+
+    if (textContent !== null) {
+      const isJson = fileType === 'json'
+      let displayContent = textContent
+
+      // Pretty print JSON
+      if (isJson) {
+        try {
+          displayContent = JSON.stringify(JSON.parse(textContent), null, 2)
+        } catch {
+          // Keep original if not valid JSON
+        }
+      }
+
+      return (
+        <div className="bg-muted/30 rounded-lg overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/50">
+            <span className="text-xs font-medium text-muted-foreground">
+              {fileType === 'json' ? 'JSON' : fileType === 'code' ? 'Code' : 'Text'} Preview
+            </span>
+            <span className="text-xs text-muted-foreground">{formatBytes(size)}</span>
+          </div>
+          <pre className="p-4 text-xs font-mono overflow-auto max-h-[400px] whitespace-pre-wrap break-all">
+            {isJson ? <JsonHighlight json={displayContent} /> : displayContent}
+          </pre>
+        </div>
+      )
+    }
+  }
+
+  // No preview available
+  return (
+    <div className="flex flex-col items-center justify-center bg-muted/30 rounded-lg p-8 min-h-[200px] gap-3">
+      <HugeiconsIcon icon={File01Icon} className="size-12 text-muted-foreground/50" strokeWidth={1.5} />
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground">Preview not available</p>
+        <p className="text-xs text-muted-foreground mt-1">{contentType || 'Unknown type'}</p>
+      </div>
+    </div>
+  )
+}
+
+// Simple JSON syntax highlighting
+function JsonHighlight({ json }: { json: string }) {
+  const highlighted = json
+    .replace(/"([^"]+)":/g, '<span class="text-purple-400">"$1"</span>:')
+    .replace(/: "([^"]*)"/g, ': <span class="text-green-400">"$1"</span>')
+    .replace(/: (\d+)/g, ': <span class="text-orange-400">$1</span>')
+    .replace(/: (true|false)/g, ': <span class="text-blue-400">$1</span>')
+    .replace(/: (null)/g, ': <span class="text-gray-400">$1</span>')
+
+  return <span dangerouslySetInnerHTML={{ __html: highlighted }} />
+}
 
 export function R2Explorer() {
   const [selectedBucket, setSelectedBucket] = useState<string | null>(null)
@@ -60,39 +241,20 @@ export function R2Explorer() {
 
   const handleDownload = () => {
     if (selectedBucket && selectedObject) {
-      window.open(
-        `/api/r2/${selectedBucket}/objects/${encodeURIComponent(selectedObject)}`,
-        "_blank"
-      )
+      const url = r2Api.getObjectUrl(selectedBucket, selectedObject)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = selectedObject.split('/').pop() || selectedObject
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     }
   }
 
-  const objectColumns: Column<Record<string, unknown>>[] = [
-    {
-      key: "key",
-      header: "Name",
-      render: (value) => (
-        <div className="flex items-center gap-2">
-          <HugeiconsIcon icon={File01Icon} className="size-4 text-muted-foreground" strokeWidth={2} />
-          <span className="font-mono text-xs truncate max-w-xs">{String(value)}</span>
-        </div>
-      ),
-    },
-    {
-      key: "size",
-      header: "Size",
-      width: "100px",
-      align: "right",
-      render: (value) => (
-        <span className="text-xs text-muted-foreground">{formatBytes(Number(value))}</span>
-      ),
-    },
-  ]
-
   if (loadingBuckets) {
     return (
-      <div className="p-6">
-        <DataTableLoading />
+      <div className="p-6 flex items-center justify-center h-64">
+        <div className="animate-pulse text-muted-foreground">Loading buckets...</div>
       </div>
     )
   }
@@ -183,117 +345,168 @@ export function R2Explorer() {
           </ScrollArea>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Objects List */}
+        <div className="w-72 border-r border-border flex flex-col bg-muted/10">
           {selectedBucket ? (
             <>
-              {/* Search */}
-              <div className="p-4 border-b border-border">
+              <div className="p-3 border-b border-border">
                 <SearchInput
                   value={searchPrefix}
                   onChange={setSearchPrefix}
                   placeholder="Filter by prefix..."
-                  className="max-w-sm"
+                  className="h-8"
                 />
               </div>
-
-              <div className="flex-1 overflow-auto p-4">
+              <ScrollArea className="flex-1">
                 {loadingObjects ? (
-                  <DataTableLoading />
+                  <div className="p-4 text-center text-muted-foreground text-sm">Loading objects...</div>
                 ) : objects?.objects?.length ? (
-                  <div className="space-y-4">
-                    <DataTable
-                      columns={objectColumns}
-                      data={objects.objects as unknown as Record<string, unknown>[]}
-                      onRowClick={(row) => setSelectedObject(row.key as string)}
-                      emptyIcon={File01Icon}
-                      emptyTitle="No objects found"
-                      emptyDescription="Upload files to this bucket to get started"
-                      actions={(row) => (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7"
-                          onClick={() => deleteObjectMutation.mutate(row.key as string)}
-                        >
-                          <HugeiconsIcon icon={Delete02Icon} className="size-4 text-muted-foreground" strokeWidth={2} />
-                        </Button>
-                      )}
-                    />
-
-                    {/* Object Details */}
-                    {selectedObject && objectMeta && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        <div className="px-4 py-3 bg-muted/50 border-b border-border flex items-center justify-between">
-                          <div>
-                            <h4 className="font-mono text-sm font-medium truncate max-w-md">{selectedObject}</h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {formatBytes(objectMeta.size)} • Uploaded {formatDate(objectMeta.uploaded)}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={handleDownload}>
-                              <HugeiconsIcon icon={Download01Icon} className="size-4 mr-1.5" strokeWidth={2} />
-                              Download
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => deleteObjectMutation.mutate(selectedObject)}
-                              disabled={deleteObjectMutation.isPending}
-                            >
-                              <HugeiconsIcon icon={Delete02Icon} className="size-4 mr-1.5" strokeWidth={2} />
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                        <div className="p-4 bg-card">
-                          <h5 className="text-xs font-medium text-muted-foreground mb-2">Metadata</h5>
-                          <div className="p-3 rounded-md bg-muted font-mono text-xs space-y-1.5">
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">ETag</span>
-                              <span>{objectMeta.etag}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Content-Type</span>
-                              <span>{objectMeta.httpMetadata?.contentType || "application/octet-stream"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Size</span>
-                              <span>{formatBytes(objectMeta.size)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Uploaded</span>
-                              <span>{formatDate(objectMeta.uploaded)}</span>
-                            </div>
-                          </div>
-
-                          {objectMeta.customMetadata && Object.keys(objectMeta.customMetadata).length > 0 && (
-                            <>
-                              <h5 className="text-xs font-medium text-muted-foreground mb-2 mt-4">Custom Metadata</h5>
-                              <div className="p-3 rounded-md bg-muted font-mono text-xs space-y-1.5">
-                                {Object.entries(objectMeta.customMetadata).map(([key, value]) => (
-                                  <div key={key} className="flex justify-between">
-                                    <span className="text-muted-foreground">{key}</span>
-                                    <span>{value}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </>
+                  <div className="p-2 space-y-0.5">
+                    {objects.objects.map((obj) => {
+                      const FileIcon = getFileIcon(undefined, obj.key)
+                      return (
+                        <button
+                          key={obj.key}
+                          onClick={() => setSelectedObject(obj.key)}
+                          className={cn(
+                            "w-full text-left px-3 py-2.5 rounded-md transition-colors group",
+                            selectedObject === obj.key
+                              ? "bg-sidebar-accent"
+                              : "hover:bg-muted"
                           )}
-                        </div>
-                      </div>
-                    )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <HugeiconsIcon
+                              icon={FileIcon}
+                              className={cn(
+                                "size-3.5 shrink-0",
+                                selectedObject === obj.key ? "text-r2" : "text-muted-foreground"
+                              )}
+                              strokeWidth={2}
+                            />
+                            <span
+                              className={cn(
+                                "font-mono text-xs truncate",
+                                selectedObject === obj.key ? "font-medium" : "text-muted-foreground"
+                              )}
+                            >
+                              {obj.key}
+                            </span>
+                          </div>
+                          <div className="mt-1 ml-5.5 text-[10px] text-muted-foreground">
+                            {formatBytes(obj.size)}
+                          </div>
+                        </button>
+                      )
+                    })}
                   </div>
                 ) : (
-                  <EmptyState
-                    icon={File01Icon}
-                    title="No objects found"
-                    description={searchPrefix ? "No objects match your search" : "This bucket is empty"}
-                  />
+                  <div className="p-4 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      {searchPrefix ? "No objects match your search" : "This bucket is empty"}
+                    </p>
+                  </div>
                 )}
-              </div>
+              </ScrollArea>
             </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center p-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Select a bucket
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Preview Panel */}
+        <div className="flex-1 flex flex-col min-w-0 bg-background">
+          {selectedObject && objectMeta ? (
+            <div className="flex flex-col h-full">
+              {/* Object Header */}
+              <div className="px-6 py-4 border-b border-border flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <HugeiconsIcon
+                      icon={getFileIcon(objectMeta.httpMetadata?.contentType, selectedObject)}
+                      className="size-4 text-r2 shrink-0"
+                      strokeWidth={2}
+                    />
+                    <h3 className="font-mono text-sm font-semibold truncate">{selectedObject}</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 ml-6">
+                    {formatBytes(objectMeta.size)} • {objectMeta.httpMetadata?.contentType || 'Unknown type'} • {formatDate(objectMeta.uploaded)}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button variant="outline" size="sm" onClick={handleDownload}>
+                    <HugeiconsIcon icon={Download01Icon} className="size-4 mr-1.5" strokeWidth={2} />
+                    Download
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => deleteObjectMutation.mutate(selectedObject)}
+                    disabled={deleteObjectMutation.isPending}
+                  >
+                    <HugeiconsIcon icon={Delete02Icon} className="size-4 mr-1.5" strokeWidth={2} />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+
+              {/* Preview */}
+              <div className="flex-1 overflow-auto p-6">
+                <FilePreview
+                  bucket={selectedBucket!}
+                  objectKey={selectedObject}
+                  contentType={objectMeta.httpMetadata?.contentType}
+                  size={objectMeta.size}
+                />
+
+                {/* Metadata */}
+                <div className="mt-6">
+                  <h5 className="text-xs font-medium text-muted-foreground mb-2">Metadata</h5>
+                  <div className="p-3 rounded-md bg-muted/50 font-mono text-xs space-y-1.5">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">ETag</span>
+                      <span>{objectMeta.etag}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Content-Type</span>
+                      <span>{objectMeta.httpMetadata?.contentType || "application/octet-stream"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Size</span>
+                      <span>{formatBytes(objectMeta.size)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Uploaded</span>
+                      <span>{formatDate(objectMeta.uploaded)}</span>
+                    </div>
+                  </div>
+
+                  {objectMeta.customMetadata && Object.keys(objectMeta.customMetadata).length > 0 && (
+                    <>
+                      <h5 className="text-xs font-medium text-muted-foreground mb-2 mt-4">Custom Metadata</h5>
+                      <div className="p-3 rounded-md bg-muted/50 font-mono text-xs space-y-1.5">
+                        {Object.entries(objectMeta.customMetadata).map(([key, value]) => (
+                          <div key={key} className="flex justify-between">
+                            <span className="text-muted-foreground">{key}</span>
+                            <span>{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : selectedBucket ? (
+            <EmptyState
+              icon={File01Icon}
+              title="Select a file"
+              description="Choose a file from the list to preview"
+            />
           ) : (
             <EmptyState
               icon={Folder01Icon}

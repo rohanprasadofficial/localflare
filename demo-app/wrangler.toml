@@ -1,4 +1,4 @@
-name = "localflare-playground"
+name = "demo-app"
 main = "src/worker/index.ts"
 compatibility_date = "2024-12-01"
 

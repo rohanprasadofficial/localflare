@@ -1,12 +1,14 @@
 {
-  "name": "localflare-playground",
+  "name": "demo-app",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"pnpm dev:api\" \"pnpm dev:client\"",
-    "dev:api": "localflare",
+    "dev": "concurrently \"pnpm dev:worker\" \"pnpm dev:client\"",
+    "dev:worker": "wrangler dev --port 8787",
     "dev:client": "vite",
+    "dev:studio": "localflare --studio --no-open",
+    "dev:all": "concurrently \"pnpm dev:worker\" \"pnpm dev:client\" \"pnpm dev:studio\"",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "wrangler deploy",

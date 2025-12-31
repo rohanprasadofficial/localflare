@@ -19,8 +19,10 @@
     "localflare-core": "workspace:*",
     "localflare-dashboard": "workspace:*",
     "localflare-server": "workspace:*",
+    "localflare-api": "workspace:*",
     "cac": "^6.7.14",
-    "picocolors": "^1.1.1"
+    "picocolors": "^1.1.1",
+    "open": "^10.1.0"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
