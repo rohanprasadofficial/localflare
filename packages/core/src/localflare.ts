@@ -1,5 +1,6 @@
 import { Miniflare } from 'miniflare'
-import { resolve, dirname } from 'node:path'
+import { resolve, dirname, basename } from 'node:path'
+import { existsSync, readdirSync } from 'node:fs'
 import * as esbuild from 'esbuild'
 import { Readable } from 'node:stream'
 import * as readline from 'node:readline'
@@ -52,21 +53,69 @@ export class LocalFlare {
 
     // Compile the worker entry point with esbuild
     const entryPoint = resolve(rootDir, this.config.main || 'src/index.ts')
-    const buildResult = await esbuild.build({
-      entryPoints: [entryPoint],
-      bundle: true,
-      format: 'esm',
-      target: 'es2022',
-      write: false,
-      minify: false,
-      sourcemap: false,
-      conditions: ['workerd', 'worker', 'browser'],
-      external: ['cloudflare:*', 'node:*'],
-    })
+    const isPrebuilt = /\.(js|mjs)$/.test(entryPoint)
+    const entryDir = dirname(entryPoint)
+    const parentDir = dirname(entryDir)
 
-    const scriptContent = buildResult.outputFiles?.[0]?.text
-    if (!scriptContent) {
-      throw new Error('Failed to compile worker script')
+    const findWasmBgFile = (dir: string): string | null => {
+      try {
+        const files = readdirSync(dir)
+        const wasmFile = files.find(f => f.endsWith('_bg.wasm'))
+        return wasmFile ? resolve(dir, wasmFile) : null
+      } catch (err) {
+        if (this.options.verbose) {
+          console.log(`[LocalFlare] Could not scan ${dir}: ${err instanceof Error ? err.message : err}`)
+        }
+        return null
+      }
+    }
+
+    const wasmFileInEntryDir = findWasmBgFile(entryDir)
+    const wasmFileInParentDir = findWasmBgFile(parentDir)
+    const hasWasmFiles = isPrebuilt && (wasmFileInEntryDir !== null || wasmFileInParentDir !== null)
+
+    let scriptContent: string | undefined
+    let resolvedEntryPoint = entryPoint
+
+    if (hasWasmFiles) {
+      if (wasmFileInParentDir && !wasmFileInEntryDir) {
+        const wasmBasename = basename(wasmFileInParentDir)
+        const mainJsName = wasmBasename.replace(/_bg\.wasm$/, '.js')
+        const mainJs = resolve(parentDir, mainJsName)
+        if (existsSync(mainJs)) {
+          resolvedEntryPoint = mainJs
+        }
+      }
+
+      if (this.options.verbose) {
+        const wasmPath = wasmFileInEntryDir || wasmFileInParentDir
+        console.log(`\n🔧 Detected WebAssembly worker`)
+        console.log(`   Entry: ${resolvedEntryPoint}`)
+        console.log(`   WASM: ${wasmPath}`)
+      }
+    } else {
+      if (this.options.verbose) {
+        console.log(`\n🔧 Compiling worker with esbuild`)
+        console.log(`   Entry: ${entryPoint}`)
+      }
+
+      const buildResult = await esbuild.build({
+        entryPoints: [entryPoint],
+        bundle: true,
+        format: 'esm',
+        target: 'es2022',
+        write: false,
+        minify: false,
+        sourcemap: false,
+        conditions: ['workerd', 'worker', 'browser'],
+        external: ['cloudflare:*', 'node:*'],
+      })
+
+      const output = buildResult.outputFiles?.[0]?.text
+      if (!output) {
+        throw new Error('Failed to compile worker script')
+      }
+      scriptContent = output
     }
 
     // Build explicit binding configurations from parsed config
@@ -141,13 +190,6 @@ export class LocalFlare {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const miniflareOptions: any = {
-      modules: [
-        {
-          type: 'ESModule',
-          path: entryPoint,
-          contents: scriptContent,
-        },
-      ],
       port: this.options.port,
       verbose: this.options.verbose,
       kvPersist: `${persistRoot}/kv`,
@@ -161,6 +203,25 @@ export class LocalFlare {
       handleRuntimeStdio,
       // Use plain text logs instead of structured JSON for easier parsing
       structuredWorkerdLogs: false,
+      compatibilityDate: this.config.compatibility_date,
+      compatibilityFlags: this.config.compatibility_flags,
+    }
+
+    if (hasWasmFiles) {
+      miniflareOptions.scriptPath = resolvedEntryPoint
+      miniflareOptions.modules = true
+      miniflareOptions.modulesRules = [
+        { type: 'ESModule', include: ['**/*.js', '**/*.mjs'], fallthrough: true },
+        { type: 'CompiledWasm', include: ['**/*.wasm'] },
+      ]
+    } else {
+      miniflareOptions.modules = [
+        {
+          type: 'ESModule',
+          path: entryPoint,
+          contents: scriptContent,
+        },
+      ]
     }
 
     // Only add bindings if they exist
