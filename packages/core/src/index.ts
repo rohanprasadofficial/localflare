@@ -9,4 +9,5 @@ export type {
   DurableObjectBinding,
   QueueProducerConfig,
   QueueConsumerConfig,
+  LocalflareManifest,
 } from './types.js'

@@ -1,17 +1,17 @@
 # localflare-core
 
-Core Miniflare wrapper and configuration parser for [Localflare](https://www.npmjs.com/package/localflare).
+Core configuration parser and utilities for [Localflare](https://www.npmjs.com/package/localflare).
 
 [![npm version](https://img.shields.io/npm/v/localflare-core.svg)](https://www.npmjs.com/package/localflare-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-This package provides the core functionality for Localflare:
+This package provides core utilities for Localflare:
 
-- **Miniflare Integration** - Wraps Miniflare to provide a consistent API for running Cloudflare Workers locally
-- **Config Parser** - Reads and parses `wrangler.toml` configuration files
-- **Bindings Support** - Full support for D1, KV, R2, Durable Objects, Queues, and more
+- **Config Parser** - Reads and parses `wrangler.toml` / `wrangler.json` / `wrangler.jsonc` configuration files
+- **Binding Discovery** - Extracts D1, KV, R2, Durable Objects, and Queue binding configurations
+- **Type Definitions** - TypeScript types for wrangler configuration and Localflare manifests
 
 ## Installation
 
@@ -24,52 +24,88 @@ pnpm add localflare-core
 ## Usage
 
 ```typescript
-import { LocalFlareCore } from 'localflare-core';
+import {
+  parseWranglerConfig,
+  findWranglerConfig,
+  WRANGLER_CONFIG_FILES
+} from 'localflare-core';
 
-const core = new LocalFlareCore({
-  configPath: './wrangler.toml',
-  port: 8787,
-  persist: '.localflare'
-});
+// Find wrangler config in current directory
+const configPath = findWranglerConfig(process.cwd());
+// Returns: ./wrangler.toml, ./wrangler.json, or ./wrangler.jsonc
 
-// Start the worker
-await core.start();
+// Parse the configuration
+const config = parseWranglerConfig(configPath);
 
-// Access bindings programmatically
-const bindings = core.getBindings();
-
-// Get D1 databases
-const d1Databases = bindings.d1;
-
-// Get KV namespaces
-const kvNamespaces = bindings.kv;
-
-// Stop when done
-await core.stop();
+// Access binding configurations
+console.log(config.d1_databases);    // D1 database bindings
+console.log(config.kv_namespaces);   // KV namespace bindings
+console.log(config.r2_buckets);      // R2 bucket bindings
+console.log(config.durable_objects); // Durable Object bindings
+console.log(config.queues);          // Queue producer/consumer config
 ```
 
-## Supported Bindings
+## API Reference
 
-| Binding | Support |
-|---------|---------|
-| D1 | ✅ Full |
-| KV | ✅ Full |
-| R2 | ✅ Full |
-| Durable Objects | ✅ Full |
-| Queues | ✅ Full |
-| Service Bindings | ✅ Full |
-| Cache API | ✅ Full |
-| Hyperdrive | ✅ Full |
-| Vectorize | ⚠️ Limited |
-| Workers AI | ⚠️ Mock |
+### `findWranglerConfig(directory: string): string | null`
+
+Searches for a wrangler configuration file in the specified directory.
+
+```typescript
+const configPath = findWranglerConfig('/path/to/project');
+// Returns: '/path/to/project/wrangler.toml' or null
+```
+
+### `parseWranglerConfig(configPath: string): WranglerConfig`
+
+Parses a wrangler configuration file (TOML, JSON, or JSONC format).
+
+```typescript
+const config = parseWranglerConfig('./wrangler.toml');
+```
+
+### `WRANGLER_CONFIG_FILES`
+
+Array of supported config file names: `['wrangler.toml', 'wrangler.json', 'wrangler.jsonc']`
+
+## Types
+
+```typescript
+interface WranglerConfig {
+  name?: string;
+  main?: string;
+  compatibility_date?: string;
+  d1_databases?: D1DatabaseConfig[];
+  kv_namespaces?: KVNamespaceConfig[];
+  r2_buckets?: R2BucketConfig[];
+  durable_objects?: { bindings: DurableObjectConfig[] };
+  queues?: {
+    producers?: QueueProducerConfig[];
+    consumers?: QueueConsumerConfig[];
+  };
+  vars?: Record<string, string>;
+  // ... and more
+}
+
+interface LocalflareManifest {
+  name: string;
+  d1: { binding: string; database_name: string }[];
+  kv: { binding: string }[];
+  r2: { binding: string; bucket_name: string }[];
+  queues: {
+    producers: { binding: string; queue: string }[];
+    consumers: { queue: string; max_batch_size?: number; /* ... */ }[];
+  };
+  do: { binding: string; className: string }[];
+}
+```
 
 ## Related Packages
 
 | Package | Description |
 |---------|-------------|
 | [`localflare`](https://www.npmjs.com/package/localflare) | CLI tool (main package) |
-| [`localflare-server`](https://www.npmjs.com/package/localflare-server) | Dashboard API server |
-| [`localflare-dashboard`](https://www.npmjs.com/package/localflare-dashboard) | React dashboard UI |
+| [`localflare-api`](https://www.npmjs.com/package/localflare-api) | Dashboard API worker |
 
 ## License
 

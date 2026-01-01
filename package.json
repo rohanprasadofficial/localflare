@@ -10,7 +10,9 @@
     "clean": "turbo clean && rm -rf node_modules",
     "playground": "pnpm --filter playground dev",
     "release": "pnpm build && pnpm publish:packages",
-    "publish:packages": "pnpm --filter localflare-core publish --no-git-checks && pnpm --filter localflare-api publish --no-git-checks && pnpm --filter localflare-dashboard publish --no-git-checks && pnpm --filter localflare publish --no-git-checks"
+    "release:beta": "pnpm build && pnpm publish:beta",
+    "publish:packages": "pnpm --filter localflare-core publish --no-git-checks && pnpm --filter localflare-api publish --no-git-checks && pnpm --filter localflare publish --no-git-checks",
+    "publish:beta": "pnpm --filter localflare-core publish --no-git-checks --tag beta && pnpm --filter localflare-api publish --no-git-checks --tag beta && pnpm --filter localflare publish --no-git-checks --tag beta"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

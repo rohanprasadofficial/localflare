@@ -1,6 +1,6 @@
 {
   "name": "localflare-api",
-  "version": "0.2.0",
+  "version": "0.2.0-beta.2",
   "description": "API worker for Localflare dashboard - runs alongside your worker with shared bindings",
   "type": "module",
   "main": "./dist/worker/index.js",
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",
+    "localflare-core": "workspace:*",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2"
   },

@@ -219,6 +219,132 @@ cli
     }
   })
 
+// Attach command - run localflare-api alongside an existing wrangler dev
+cli
+  .command('attach [configPath]', 'Run Localflare API alongside an existing wrangler dev server')
+  .option('-p, --port <port>', 'Port for Localflare API', { default: 8788 })
+  .option('--dev', 'Open local dashboard (localhost:5174) instead of studio.localflare.dev')
+  .option('--no-open', 'Do not open browser automatically')
+  .action(async (configPath: string | undefined, options) => {
+    console.log('')
+    console.log(pc.bold(pc.cyan('  ⚡ Localflare')))
+    console.log(pc.dim('  Attach Mode - Run alongside existing wrangler dev'))
+    console.log('')
+
+    const apiPort = Number(options.port)
+
+    // Find wrangler config
+    let resolvedConfig: string
+    if (configPath) {
+      resolvedConfig = resolve(configPath)
+      if (!existsSync(resolvedConfig)) {
+        console.log(pc.red(`  ✗ Could not find ${configPath}`))
+        process.exit(1)
+      }
+    } else {
+      const detectedConfig = findWranglerConfig(process.cwd())
+      if (!detectedConfig) {
+        console.log(pc.red(`  ✗ Could not find wrangler config file`))
+        console.log(pc.dim(`    Looking for: ${WRANGLER_CONFIG_FILES.join(', ')}`))
+        process.exit(1)
+      }
+      resolvedConfig = detectedConfig
+    }
+
+    console.log(pc.dim(`  👀 Detected: ${resolvedConfig}`))
+
+    try {
+      // Setup .localflare directory (but don't add service binding - standalone mode)
+      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, false) // isPrimary=false
+
+      // Display bindings
+      const bindingLines = formatBindings(manifest)
+      if (bindingLines.length > 0) {
+        console.log(pc.dim(`  🔗 Bindings:`))
+        for (const line of bindingLines) {
+          console.log(pc.dim(line))
+        }
+      }
+
+      console.log('')
+      console.log(pc.dim(`  🚀 Starting Localflare API on port ${apiPort}...`))
+      console.log('')
+
+      // Run localflare-api as standalone worker sharing the same state directory
+      const persistPath = join(dirname(resolvedConfig), '.wrangler', 'state')
+
+      const wranglerArgs = [
+        'wrangler', 'dev',
+        '-c', shadowConfigPath,
+        '--persist-to', persistPath,
+        '--port', String(apiPort),
+      ]
+
+      const wranglerProcess = spawn('npx', wranglerArgs, {
+        cwd: dirname(resolvedConfig),
+        stdio: ['inherit', 'pipe', 'pipe'],
+        shell: true,
+      })
+
+      let started = false
+
+      // Dashboard URL points to localflare-api port
+      const dashboardUrl = options.dev
+        ? `http://localhost:5174?port=${apiPort}`
+        : `https://studio.localflare.dev?port=${apiPort}`
+
+      wranglerProcess.stdout?.on('data', (data: Buffer) => {
+        const output = data.toString()
+
+        // Detect ready
+        if (!started && (output.includes('Ready') || output.includes('has access to the following bindings'))) {
+          started = true
+          console.log(pc.green('  ✓ Localflare API is running!'))
+          console.log('')
+          console.log(`  ${pc.dim('API:')}        ${pc.cyan(`http://localhost:${apiPort}/__localflare/*`)}`)
+          console.log(`  ${pc.dim('Dashboard:')}  ${pc.cyan(dashboardUrl)}`)
+          console.log('')
+          console.log(pc.yellow('  📋 Your main worker should be running separately (wrangler dev, pnpm dev, etc.)'))
+          console.log(pc.yellow('     Both share the same .wrangler/state directory for D1/KV/R2 access'))
+          console.log('')
+          console.log(pc.dim('  Press Ctrl+C to stop'))
+          console.log('')
+
+          if (options.open !== false) {
+            open(dashboardUrl)
+          }
+        }
+      })
+
+      wranglerProcess.stderr?.on('data', (data: Buffer) => {
+        const output = data.toString()
+        // Only show errors, not info logs
+        if (output.includes('ERROR') || output.includes('error')) {
+          process.stderr.write(pc.red(output))
+        }
+      })
+
+      wranglerProcess.on('close', (code) => {
+        if (code !== 0 && code !== null) {
+          console.log(pc.red(`  ✗ Localflare API exited with code ${code}`))
+        }
+        process.exit(code ?? 0)
+      })
+
+      // Handle shutdown
+      const shutdown = () => {
+        wranglerProcess.kill('SIGTERM')
+      }
+      process.on('SIGINT', shutdown)
+      process.on('SIGTERM', shutdown)
+
+    } catch (error) {
+      console.log(pc.red(`  ✗ Failed to start Localflare`))
+      console.log(pc.dim(`    ${error}`))
+      process.exit(1)
+    }
+  })
+
 cli.help((sections) => {
   // Add examples section
   sections.push({
@@ -229,16 +355,21 @@ cli.help((sections) => {
   # Custom port
   $ localflare --port 9000
 
+  # Attach mode: Run Localflare API separately (for custom dev workflows)
+  # Terminal 1: Your dev server (wrangler dev, pnpm dev, opennext dev, etc.)
+  # Terminal 2: localflare attach --port 8788
+  $ localflare attach
+  $ localflare attach --port 8788
+
   # Pass wrangler options after '--'
   $ localflare -- --env staging
   $ localflare -- --env production --remote
-  $ localflare -- --var API_KEY:secret --inspector-port 9229
 
   # Combine localflare and wrangler options
   $ localflare --port 9000 --no-open -- --env staging`,
   })
   return sections
 })
-cli.version('0.2.0')
+cli.version('0.2.0-beta.2')
 
 cli.parse()

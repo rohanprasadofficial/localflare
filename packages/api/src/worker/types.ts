@@ -5,17 +5,9 @@
  * the same binding IDs in the generated shadow config.
  */
 
-// Manifest passed from CLI via env variable
-export interface LocalflareManifest {
-  d1: { binding: string; database_name: string }[]
-  kv: { binding: string }[]
-  r2: { binding: string; bucket_name: string }[]
-  queues: {
-    producers: { binding: string; queue: string }[]
-    consumers: { queue: string; max_batch_size?: number; max_batch_timeout?: number; max_retries?: number; dead_letter_queue?: string }[]
-  }
-  do: { binding: string; className: string }[]
-}
+// Re-export manifest type from core (type-only import for Worker compatibility)
+import type { LocalflareManifest } from 'localflare-core'
+export type { LocalflareManifest }
 
 // Dynamic environment type - bindings are added at runtime
 export interface Env {
@@ -31,7 +23,7 @@ export function getManifest(env: Env): LocalflareManifest {
   try {
     return JSON.parse(env.LOCALFLARE_MANIFEST || '{}')
   } catch {
-    return { d1: [], kv: [], r2: [], queues: { producers: [], consumers: [] }, do: [] }
+    return { name: 'worker', d1: [], kv: [], r2: [], queues: { producers: [], consumers: [] }, do: [] }
   }
 }
 

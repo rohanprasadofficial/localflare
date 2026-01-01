@@ -31,6 +31,17 @@ export const WIKI_SECTIONS: WikiSection[] = [
     ],
   },
   {
+    id: 'cli',
+    title: 'CLI Reference',
+    icon: CommandIcon,
+    children: [
+      { id: 'cli-commands', title: 'Commands' },
+      { id: 'cli-attach-mode', title: 'Attach Mode' },
+      { id: 'cli-options', title: 'Options' },
+      { id: 'cli-examples', title: 'Examples' },
+    ],
+  },
+  {
     id: 'd1',
     title: 'D1 Database',
     icon: Database02Icon,
@@ -82,20 +93,11 @@ export const WIKI_SECTIONS: WikiSection[] = [
     ],
   },
   {
-    id: 'cli',
-    title: 'CLI Reference',
-    icon: CommandIcon,
-    children: [
-      { id: 'cli-commands', title: 'Commands' },
-      { id: 'cli-options', title: 'Options' },
-      { id: 'cli-examples', title: 'Examples' },
-    ],
-  },
-  {
     id: 'advanced',
     title: 'Advanced',
     icon: Settings02Icon,
     children: [
+      { id: 'requirements', title: 'Requirements' },
       { id: 'architecture', title: 'Architecture' },
       { id: 'bindings', title: 'Supported Bindings' },
       { id: 'persistence', title: 'Data Persistence' },

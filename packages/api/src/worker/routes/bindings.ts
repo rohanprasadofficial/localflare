@@ -11,7 +11,7 @@ export function createBindingsRoutes() {
     const manifest = getManifest(c.env)
 
     return c.json({
-      name: 'localflare-sidecar',
+      name: manifest.name || 'worker',
       bindings: {
         d1: manifest.d1.map((db) => ({
           type: 'd1',

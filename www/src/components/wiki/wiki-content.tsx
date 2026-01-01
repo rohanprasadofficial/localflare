@@ -122,6 +122,13 @@ export function WikiContent({ activeSection }: { activeSection: string }) {
     'quick-start': <QuickStartSection />,
     'configuration': <ConfigurationSection />,
 
+    // CLI Reference (moved up for visibility)
+    'cli': <CLISection />,
+    'cli-commands': <CLICommandsSection />,
+    'cli-attach-mode': <CLIAttachModeSection />,
+    'cli-options': <CLIOptionsSection />,
+    'cli-examples': <CLIExamplesSection />,
+
     // D1 Database
     'd1': <D1Section />,
     'd1-overview': <D1OverviewSection />,
@@ -153,14 +160,9 @@ export function WikiContent({ activeSection }: { activeSection: string }) {
     'queues-messages': <QueuesMessagesSection />,
     'queues-testing': <QueuesTestingSection />,
 
-    // CLI Reference
-    'cli': <CLISection />,
-    'cli-commands': <CLICommandsSection />,
-    'cli-options': <CLIOptionsSection />,
-    'cli-examples': <CLIExamplesSection />,
-
     // Advanced
     'advanced': <AdvancedSection />,
+    'requirements': <RequirementsSection />,
     'architecture': <ArchitectureSection />,
     'bindings': <BindingsSection />,
     'persistence': <PersistenceSection />,
@@ -199,6 +201,10 @@ function GettingStartedSection() {
         'Send test messages to Queues and monitor processing',
         'Zero configuration—reads your wrangler.toml automatically',
       ]} />
+      <Callout type="info">
+        <strong>Requirement:</strong> Localflare works with Cloudflare Worker projects that use <Code>wrangler dev</Code> for
+        local development. It runs alongside wrangler to access your bindings.
+      </Callout>
       <Callout type="tip">
         Localflare uses a sidecar architecture, running alongside your worker with shared bindings for full compatibility.
       </Callout>
@@ -281,6 +287,7 @@ npx localflare
 
       <Callout type="tip">
         Localflare automatically detects all bindings from your <Code>wrangler.toml</Code> file.
+        See <strong>CLI Commands</strong> for all options including <Code>attach</Code> mode for custom dev workflows.
       </Callout>
     </Section>
   );
@@ -880,8 +887,8 @@ function CLICommandsSection() {
     <Section id="cli-commands">
       <H1>Commands</H1>
 
-      <H2>localflare</H2>
-      <P>Start the Localflare development server.</P>
+      <H2>localflare (default)</H2>
+      <P>Start the Localflare development server with your worker.</P>
       <CodeBlock title="Terminal">{`localflare [configPath] [options] [-- wrangler-options]`}</CodeBlock>
 
       <H3>Arguments</H3>
@@ -892,6 +899,105 @@ function CLICommandsSection() {
           ['-- wrangler-options', 'Options to pass directly to wrangler'],
         ]}
       />
+
+      <Callout type="info">
+        This is the recommended way to use Localflare for standard Cloudflare Worker projects.
+        It runs <Code>wrangler dev</Code> under the hood with both your worker and the Localflare API.
+      </Callout>
+
+      <H2>localflare attach</H2>
+      <P>Run Localflare API alongside an existing dev server. See the <strong>Attach Mode</strong> section for details.</P>
+      <CodeBlock title="Terminal">{`localflare attach [configPath] [options]`}</CodeBlock>
+    </Section>
+  );
+}
+
+function CLIAttachModeSection() {
+  return (
+    <Section id="cli-attach-mode">
+      <H1>Attach Mode</H1>
+      <P>
+        Attach mode runs the Localflare API as a standalone worker, separate from your main dev server.
+        This is useful for projects with custom dev workflows that don't use <Code>wrangler dev</Code> directly.
+      </P>
+
+      <Callout type="warning">
+        <strong>Important:</strong> Both your dev server and Localflare must use the same <Code>.wrangler/state</Code> directory
+        to share data. This works automatically when both use the same project directory.
+      </Callout>
+
+      <H2>When to Use Attach Mode</H2>
+      <List items={[
+        <>Projects using <Code>opennext dev</Code> (Next.js on Workers)</>,
+        <>Projects using <Code>nuxt dev</Code> (Nuxt on Workers)</>,
+        'Projects with custom build/dev pipelines',
+        'When you need to run your dev server separately',
+        'When the default mode has compatibility issues with your setup',
+      ]} />
+
+      <H2>How It Works</H2>
+      <Steps items={[
+        {
+          title: 'Terminal 1: Your dev server',
+          content: <>Run your normal dev command: <Code>pnpm dev</Code>, <Code>opennext dev</Code>, <Code>wrangler dev</Code>, etc.</>
+        },
+        {
+          title: 'Terminal 2: Localflare attach',
+          content: <>Run <Code>npx localflare attach</Code> to start the API on port 8788</>
+        },
+        {
+          title: 'Shared state directory',
+          content: <>Both workers read/write to the same <Code>.wrangler/state</Code> directory</>
+        },
+        {
+          title: 'Dashboard connects',
+          content: 'The dashboard connects to the Localflare API on port 8788'
+        },
+      ]} />
+
+      <H2>Usage</H2>
+      <CodeBlock title="Terminal">{`# Terminal 1: Start your dev server
+pnpm dev
+# or: opennext dev
+# or: wrangler dev
+# or: nuxt dev
+
+# Terminal 2: Start Localflare API
+npx localflare attach
+
+# With custom port
+npx localflare attach --port 9000
+
+# With specific config
+npx localflare attach ./path/to/wrangler.toml`}</CodeBlock>
+
+      <H2>Options</H2>
+      <Table
+        headers={['Option', 'Description', 'Default']}
+        rows={[
+          ['-p, --port', 'Port for Localflare API', '8788'],
+          ['--no-open', "Don't open browser", 'false'],
+          ['--dev', 'Use local dashboard (localhost:5174)', 'false'],
+        ]}
+      />
+
+      <H2>Example: OpenNext Project</H2>
+      <CodeBlock title="Terminal">{`# Terminal 1
+cd my-nextjs-project
+opennext dev
+
+# Terminal 2
+cd my-nextjs-project
+npx localflare attach
+
+# Dashboard opens at studio.localflare.dev?port=8788
+# Your Next.js app runs at localhost:8787
+# Both share the same D1/KV/R2 data`}</CodeBlock>
+
+      <Callout type="tip">
+        The key requirement is that your dev server writes to <Code>.wrangler/state</Code> in the same
+        location. Most wrangler-based tools do this automatically.
+      </Callout>
     </Section>
   );
 }
@@ -966,8 +1072,86 @@ function AdvancedSection() {
     <Section id="advanced">
       <H1>Advanced Topics</H1>
       <P>
-        Deep dive into Localflare's architecture and advanced features.
+        Deep dive into Localflare's architecture, requirements, and advanced features.
       </P>
+    </Section>
+  );
+}
+
+function RequirementsSection() {
+  return (
+    <Section id="requirements">
+      <H1>Requirements & Compatibility</H1>
+      <P>
+        Localflare is designed for <strong>Cloudflare Workers projects</strong> that use wrangler
+        for local development. Understanding the requirements helps you get the most out of Localflare.
+      </P>
+
+      <H2>Core Requirement</H2>
+      <Callout type="warning">
+        <strong>Localflare requires wrangler dev</strong> - Your project must use <Code>wrangler dev</Code> (directly or indirectly)
+        for local development. Localflare runs alongside wrangler to access your Worker bindings.
+      </Callout>
+
+      <H2>Supported Project Types</H2>
+      <Table
+        headers={['Project Type', 'Support', 'Command']}
+        rows={[
+          ['Standard Cloudflare Workers', 'Full', 'npx localflare'],
+          ['Hono on Workers', 'Full', 'npx localflare'],
+          ['Remix on Workers', 'Full', 'npx localflare'],
+          ['Astro on Workers', 'Full', 'npx localflare'],
+          ['SvelteKit on Workers', 'Full', 'npx localflare'],
+          ['OpenNext (Next.js)', 'Attach Mode', 'npx localflare attach'],
+          ['Nuxt on Workers', 'Attach Mode', 'npx localflare attach'],
+          ['Custom wrangler setups', 'Attach Mode', 'npx localflare attach'],
+        ]}
+      />
+
+      <H2>Not Supported</H2>
+      <List items={[
+        <>Pure Node.js projects without Workers (use <Code>better-sqlite3</Code> directly)</>,
+        'Projects that only use Cloudflare in production (no local wrangler dev)',
+        'Projects using only remote/deployed Workers (no local development)',
+        <>Plain <Code>next dev</Code> or <Code>vite dev</Code> without wrangler integration</>,
+      ]} />
+
+      <H2>How to Check Compatibility</H2>
+      <P>Your project is compatible if:</P>
+      <List items={[
+        <>You have a <Code>wrangler.toml</Code>, <Code>wrangler.json</Code>, or <Code>wrangler.jsonc</Code> file</>,
+        <>Running <Code>wrangler dev</Code> starts your local development server</>,
+        'Your bindings (D1, KV, R2, etc.) work locally during development',
+      ]} />
+
+      <H2>Choosing the Right Mode</H2>
+      <H3>Default Mode (recommended for most projects)</H3>
+      <P>
+        Use default mode when your project uses <Code>wrangler dev</Code> as the main dev command,
+        or when your framework's dev command wraps wrangler internally.
+      </P>
+      <CodeBlock title="Terminal">{`# Your dev script uses wrangler dev
+npx localflare
+
+# Or if you normally run:
+# wrangler dev
+# Then just use localflare instead`}</CodeBlock>
+
+      <H3>Attach Mode (for custom dev workflows)</H3>
+      <P>
+        Use attach mode when your project has a custom dev command that runs wrangler differently,
+        or when you need to run your dev server and Localflare separately.
+      </P>
+      <CodeBlock title="Terminal">{`# Terminal 1: Your custom dev command
+pnpm dev  # or opennext dev, nuxt dev, etc.
+
+# Terminal 2: Localflare API
+npx localflare attach`}</CodeBlock>
+
+      <Callout type="tip">
+        If you're unsure which mode to use, try the default mode first. If it doesn't work
+        with your setup, switch to attach mode.
+      </Callout>
     </Section>
   );
 }
@@ -1167,8 +1351,24 @@ function FAQSection() {
 
       <H3>Does it work with any framework?</H3>
       <P>
-        Yes! Localflare works with any framework that can be deployed to Cloudflare Workers:
-        Next.js (with OpenNext), Nuxt, Remix, SvelteKit, Astro, Hono, or plain Workers.
+        Localflare works with any framework that uses <Code>wrangler dev</Code> for local development.
+        This includes Remix, SvelteKit, Astro, Hono, and plain Workers. For frameworks with custom
+        dev workflows like OpenNext (Next.js) or Nuxt, use <Code>localflare attach</Code> mode.
+      </P>
+
+      <H3>What is attach mode?</H3>
+      <P>
+        Attach mode runs the Localflare API as a separate process alongside your existing dev server.
+        Use it when your project has a custom dev command (like <Code>opennext dev</Code> or <Code>nuxt dev</Code>)
+        that doesn't use <Code>wrangler dev</Code> directly. Run your dev server in one terminal and
+        <Code>npx localflare attach</Code> in another.
+      </P>
+
+      <H3>Why doesn't Localflare work with my project?</H3>
+      <P>
+        Localflare requires <Code>wrangler dev</Code> because it accesses your bindings through wrangler's
+        local runtime. If your project doesn't use wrangler for local development (e.g., pure Node.js
+        with <Code>next dev</Code>), Localflare won't be able to access your Cloudflare bindings.
       </P>
 
       <H3>How do I update Localflare?</H3>

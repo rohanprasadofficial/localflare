@@ -67,6 +67,23 @@ localflare -- --var API_KEY:secret
 localflare --port 9000 -- --env production --remote
 ```
 
+### Attach Mode (for custom dev workflows)
+
+For projects with custom dev commands (OpenNext, Nuxt, etc.), use attach mode:
+
+```bash
+# Terminal 1: Your dev server
+pnpm dev        # or: opennext dev, nuxt dev, wrangler dev, etc.
+
+# Terminal 2: Localflare API
+localflare attach
+
+# Custom port for Localflare API
+localflare attach --port 9000
+```
+
+Attach mode runs the Localflare API separately, sharing the same `.wrangler/state` directory with your dev server.
+
 ### Options
 
 ```bash
@@ -80,7 +97,30 @@ Options:
   --dev              Open local dashboard instead of studio.localflare.dev
   -h, --help         Display help
   --version          Display version
+
+localflare attach [configPath] [options]
+
+Options:
+  -p, --port <port>  Localflare API port (default: 8788)
+  --no-open          Don't open browser automatically
+  --dev              Open local dashboard instead of studio.localflare.dev
 ```
+
+## Requirements
+
+- **Node.js 18+**
+- **A Cloudflare Workers project** with `wrangler.toml`
+- **wrangler dev** must work for your project (Localflare runs alongside wrangler)
+
+### Supported Project Types
+
+| Project Type | Mode | Command |
+|--------------|------|---------|
+| Standard Workers | Default | `npx localflare` |
+| Hono, Remix, Astro, SvelteKit | Default | `npx localflare` |
+| OpenNext (Next.js on Workers) | Attach | `npx localflare attach` |
+| Nuxt on Workers | Attach | `npx localflare attach` |
+| Custom wrangler setups | Attach | `npx localflare attach` |
 
 ## How It Works
 

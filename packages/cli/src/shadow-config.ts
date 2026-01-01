@@ -9,67 +9,9 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, cpSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { createRequire } from 'node:module'
-import { parse as parseToml } from 'smol-toml'
+import { parseWranglerConfig, type WranglerConfig, type LocalflareManifest } from 'localflare-core'
 
-export interface WranglerConfig {
-  name?: string
-  main?: string
-  compatibility_date?: string
-  d1_databases?: Array<{
-    binding: string
-    database_name: string
-    database_id: string
-  }>
-  kv_namespaces?: Array<{
-    binding: string
-    id: string
-  }>
-  r2_buckets?: Array<{
-    binding: string
-    bucket_name: string
-  }>
-  queues?: {
-    producers?: Array<{
-      binding: string
-      queue: string
-    }>
-    consumers?: Array<{
-      queue: string
-      max_batch_size?: number
-      max_batch_timeout?: number
-      max_retries?: number
-      dead_letter_queue?: string
-    }>
-  }
-  durable_objects?: {
-    bindings?: Array<{
-      name: string
-      class_name: string
-      script_name?: string
-    }>
-  }
-  vars?: Record<string, string>
-}
-
-export interface LocalflareManifest {
-  name: string
-  d1: { binding: string; database_name: string }[]
-  kv: { binding: string }[]
-  r2: { binding: string; bucket_name: string }[]
-  queues: {
-    producers: { binding: string; queue: string }[]
-    consumers: { queue: string; max_batch_size?: number; max_batch_timeout?: number; max_retries?: number; dead_letter_queue?: string }[]
-  }
-  do: { binding: string; className: string }[]
-}
-
-/**
- * Parse a wrangler.toml file
- */
-export function parseWranglerConfig(configPath: string): WranglerConfig {
-  const content = readFileSync(configPath, 'utf-8')
-  return parseToml(content) as WranglerConfig
-}
+export type { LocalflareManifest }
 
 /**
  * Find the pre-built worker from localflare-api package
@@ -151,37 +93,34 @@ service = "${userWorkerName}"
 `
   }
 
-  // Copy D1 databases
+  // Copy D1 databases (preserve preview_database_id if set)
   if (config.d1_databases?.length) {
     for (const db of config.d1_databases) {
       toml += `[[d1_databases]]
 binding = "${db.binding}"
 database_name = "${db.database_name}"
 database_id = "${db.database_id}"
-
-`
+${db.preview_database_id ? `preview_database_id = "${db.preview_database_id}"\n` : ''}`
     }
   }
 
-  // Copy KV namespaces
+  // Copy KV namespaces (preserve preview_id if set)
   if (config.kv_namespaces?.length) {
     for (const kv of config.kv_namespaces) {
       toml += `[[kv_namespaces]]
 binding = "${kv.binding}"
 id = "${kv.id}"
-
-`
+${kv.preview_id ? `preview_id = "${kv.preview_id}"\n` : ''}`
     }
   }
 
-  // Copy R2 buckets
+  // Copy R2 buckets (preserve remote, jurisdiction if set)
   if (config.r2_buckets?.length) {
     for (const r2 of config.r2_buckets) {
       toml += `[[r2_buckets]]
 binding = "${r2.binding}"
 bucket_name = "${r2.bucket_name}"
-
-`
+${r2.remote ? 'remote = true\n' : ''}${r2.jurisdiction ? `jurisdiction = "${r2.jurisdiction}"\n` : ''}`
     }
   }
 
@@ -191,8 +130,7 @@ bucket_name = "${r2.bucket_name}"
       toml += `[[queues.producers]]
 binding = "${producer.binding}"
 queue = "${producer.queue}"
-
-`
+${producer.delivery_delay ? `delivery_delay = ${producer.delivery_delay}\n` : ''}`
     }
   }
 

@@ -16,6 +16,7 @@ export interface D1DatabaseConfig {
   database_name: string
   database_id: string
   migrations_dir?: string
+  preview_database_id?: string
 }
 
 export interface KVNamespaceConfig {
@@ -28,6 +29,8 @@ export interface R2BucketConfig {
   binding: string
   bucket_name: string
   preview_bucket_name?: string
+  remote?: boolean
+  jurisdiction?: string
 }
 
 export interface DurableObjectsConfig {
@@ -48,6 +51,7 @@ export interface QueuesConfig {
 export interface QueueProducerConfig {
   binding: string
   queue: string
+  delivery_delay?: number
 }
 
 export interface QueueConsumerConfig {
@@ -56,6 +60,8 @@ export interface QueueConsumerConfig {
   max_batch_timeout?: number
   max_retries?: number
   dead_letter_queue?: string
+  max_concurrency?: number
+  retry_delay?: number
 }
 
 export interface DiscoveredBindings {
@@ -74,4 +80,27 @@ export interface BindingInfo {
   type: 'D1' | 'KV' | 'R2' | 'DO' | 'Queue' | 'Var'
   name: string
   details: Record<string, unknown>
+}
+
+/**
+ * Manifest passed to the Localflare API worker via environment variable.
+ * Contains binding information discovered from user's wrangler.toml.
+ * Used by both CLI (to generate) and API (to consume).
+ */
+export interface LocalflareManifest {
+  name: string
+  d1: { binding: string; database_name: string }[]
+  kv: { binding: string }[]
+  r2: { binding: string; bucket_name: string }[]
+  queues: {
+    producers: { binding: string; queue: string }[]
+    consumers: {
+      queue: string
+      max_batch_size?: number
+      max_batch_timeout?: number
+      max_retries?: number
+      dead_letter_queue?: string
+    }[]
+  }
+  do: { binding: string; className: string }[]
 }
