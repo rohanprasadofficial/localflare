@@ -168,9 +168,17 @@ pnpm install
 # Build all packages
 pnpm build
 
-# Run the playground
-cd playground
-pnpm dev
+# Terminal 1: Start the demo app worker and localflare API
+cd demo-app
+pnpm run dev:client
+pnpm run dev:studio
+
+# Terminal 2: Start the dashboard
+cd packages/dashboard
+pnpm run dev
+
+# Open the dashboard
+# http://localhost:5174/d1?port=8787
 ```
 
 ## Supported Bindings
