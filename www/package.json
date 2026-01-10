@@ -30,7 +30,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "pnpm build && vite preview",
-    "deploy": "wrangler deploy",
+    "deploy": "pnpm build & wrangler deploy",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
