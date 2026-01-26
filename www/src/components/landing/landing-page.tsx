@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
@@ -10,6 +10,10 @@ import {
   Copy01Icon,
   Tick01Icon,
 } from '@hugeicons/core-free-icons';
+
+const Testimonials = lazy(() =>
+  import('./testimonials').then((m) => ({ default: m.Testimonials }))
+);
 
 export function LandingPage() {
   return (
@@ -263,6 +267,11 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials */}
+      <Suspense fallback={<div className="py-16 border-t border-zinc-200" />}>
+        <Testimonials />
+      </Suspense>
 
       {/* Tech Stack */}
       <section className="py-12 border-t border-zinc-200">
