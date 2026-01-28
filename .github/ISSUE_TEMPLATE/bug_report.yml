@@ -1,0 +1,176 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us resolve the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear description of what the bug is
+      placeholder: When I do X, Y happens instead of Z
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Run `localflare` in a project with...
+        2. Open the dashboard at...
+        3. Click on...
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen
+      placeholder: I expected the table to load with data
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened (include error messages if any)
+      placeholder: The table shows "No data available" even though the database has rows
+    validations:
+      required: true
+
+  - type: dropdown
+    id: binding-type
+    attributes:
+      label: Which binding type is affected?
+      description: Select all that apply
+      multiple: true
+      options:
+        - D1 Database
+        - KV Namespace
+        - R2 Bucket
+        - Durable Objects
+        - Queues
+        - Service Bindings
+        - Not applicable / Other
+    validations:
+      required: true
+
+  - type: input
+    id: localflare-version
+    attributes:
+      label: Localflare version
+      description: Run `npx localflare --version` or check package.json
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      description: Run `node --version`
+      placeholder: "v20.10.0"
+    validations:
+      required: true
+
+  - type: input
+    id: wrangler-version
+    attributes:
+      label: Wrangler version
+      description: Run `npx wrangler --version`
+      placeholder: "3.80.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser (for dashboard issues)
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Brave
+        - Edge
+        - Other
+        - Not applicable
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Localflare mode
+      options:
+        - Default mode (localflare)
+        - Attach mode (localflare attach)
+    validations:
+      required: true
+
+  - type: textarea
+    id: wrangler-config
+    attributes:
+      label: Relevant wrangler.toml configuration
+      description: Share relevant parts of your wrangler.toml (remove sensitive data)
+      render: toml
+      placeholder: |
+        name = "my-worker"
+        main = "src/index.ts"
+        compatibility_date = "2024-01-01"
+
+        [[d1_databases]]
+        binding = "DB"
+        database_name = "my-database"
+        database_id = "xxx"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output / Error logs
+      description: Include relevant console output or error messages
+      render: shell
+      placeholder: |
+        $ localflare --verbose
+        [error] Failed to connect to D1 database...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context, screenshots, or information that might help
+      placeholder: |
+        - This started happening after upgrading to version X
+        - Works fine with wrangler dev directly
+        - Screenshot: [attach image]
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have tested with the latest version of Localflare
+          required: true
+        - label: I have included all required information above
+          required: true

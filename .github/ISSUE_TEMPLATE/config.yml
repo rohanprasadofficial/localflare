@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or Discussion
+    url: https://github.com/rohanprasadofficial/localflare/discussions
+    about: Ask questions or discuss ideas with the community
+  - name: Documentation
+    url: https://localflare.dev/docs
+    about: Check the documentation for usage guides and examples
+  - name: Twitter / X
+    url: https://x.com/rohanpdofficial
+    about: Follow for updates and announcements

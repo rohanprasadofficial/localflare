@@ -258,6 +258,18 @@ A comprehensive database management interface inspired by Drizzle Studio and Sup
 - Column types and primary key indicators
 - Row counts per table
 
+## Contributing
+
+We welcome contributions! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+
+Check out our **[Contributing Guide](CONTRIBUTING.md)** to get started.
+
+Before contributing:
+1. Check existing [issues](https://github.com/rohanprasadofficial/localflare/issues) and [discussions](https://github.com/rohanprasadofficial/localflare/discussions)
+2. Read the [Contributing Guide](CONTRIBUTING.md)
+3. Follow the code style and conventions
+4. Test your changes thoroughly
+
 ## Sponsorship
 
 If you find Localflare useful, please consider supporting its development:

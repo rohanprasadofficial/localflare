@@ -1,0 +1,113 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please provide as much detail as possible to help us understand your request.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this feature solve? What's the use case?
+      placeholder: |
+        I'm working on a project where I need to...
+        Currently, I have to manually...
+        This is frustrating because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like this feature to work?
+      placeholder: |
+        I would like to be able to...
+        The dashboard could show...
+        The CLI could have a flag like...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Which area does this feature relate to?
+      description: Select all that apply
+      multiple: true
+      options:
+        - CLI (command-line interface)
+        - Dashboard UI
+        - D1 Database features
+        - KV Namespace features
+        - R2 Bucket features
+        - Durable Objects features
+        - Queue features
+        - Configuration / Setup
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other solutions or workarounds have you considered?
+      placeholder: |
+        I tried using...
+        I could work around this by...
+        Other tools like X do this by...
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples from other tools
+      description: Are there similar features in other tools that inspired this request?
+      placeholder: |
+        Drizzle Studio has a feature where...
+        Prisma Studio allows you to...
+        Supabase dashboard shows...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How important is this feature to you?
+      options:
+        - Critical - Blocking my work
+        - High - Would significantly improve my workflow
+        - Medium - Nice to have
+        - Low - Minor improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context, mockups, or examples
+      placeholder: |
+        Here's a mockup of how it could look...
+        This would be especially useful for...
+        Related to issue #123
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to submit a PR to implement this feature
+          required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: This feature aligns with Localflare's goal of local Cloudflare Workers development
+          required: true
