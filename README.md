@@ -1,5 +1,7 @@
 # Localflare
 
+[![CI](https://github.com/rohanprasadofficial/localflare/actions/workflows/ci.yml/badge.svg)](https://github.com/rohanprasadofficial/localflare/actions/workflows/ci.yml)
+
 Local development dashboard for Cloudflare Workers. Visualize and interact with your D1 databases, KV namespaces, R2 buckets, Durable Objects, and Queues during development.
 
 <img width="1491" height="1000" alt="image" src="https://github.com/user-attachments/assets/913505fd-4c09-4c9e-9a41-44cfc89571af" />
