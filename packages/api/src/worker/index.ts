@@ -104,3 +104,6 @@ app.all('*', async (c) => {
 
 // Export the worker
 export default app
+
+// Named export used by integration tests
+export { createDORoutes }

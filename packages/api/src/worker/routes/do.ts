@@ -5,15 +5,31 @@ import { getManifest } from '../types.js'
 /**
  * Durable Objects routes for the sidecar worker.
  *
- * Note: DO storage access is limited in sidecar mode because:
- * 1. We can only get DO stubs, not access storage directly
- * 2. To list storage, the DO would need to expose an endpoint for it
- * 3. The user's DO implementation determines what's accessible
- *
- * For now, we list available DOs and provide hints on usage.
+ * Storage inspection works by proxying to a Node.js-side CLI server
+ * that reads the DO SQLite files directly from disk. The URL is
+ * provided via the LOCALFLARE_DO_STORAGE_URL env var.
  */
 export function createDORoutes() {
   const app = new Hono<{ Bindings: Env }>()
+
+  // ── Helpers ─────────────────────────────────────────────────────
+
+  /** Proxy a request to the CLI DO storage server */
+  async function proxyToStorageServer(
+    env: Env,
+    path: string,
+    init?: RequestInit,
+  ): Promise<Response | null> {
+    const baseUrl = env.LOCALFLARE_DO_STORAGE_URL as string | undefined
+    if (!baseUrl) return null
+    try {
+      return await fetch(`${baseUrl}${path}`, init)
+    } catch {
+      return null
+    }
+  }
+
+  // ── Class / binding listing ───────────────────────────────────
 
   // List all DO classes from config
   app.get('/', async (c) => {
@@ -23,9 +39,88 @@ export function createDORoutes() {
         binding: doConfig.binding,
         class_name: doConfig.className,
       })),
-      hint: 'Durable Object storage inspection requires the DO to expose a storage endpoint.',
     })
   })
+
+  // ── Storage routes (proxied to CLI server) ────────────────────
+
+  // List instances for a binding (from disk)
+  app.get('/:binding/storage/instances', async (c) => {
+    const binding = c.req.param('binding')
+    const encodedBinding = encodeURIComponent(binding)
+    const resp = await proxyToStorageServer(c.env, `/do/${encodedBinding}/instances`)
+    if (resp) return resp
+    return c.json(
+      {
+        error: 'DO storage server not available',
+        hint: 'Ensure localflare started with DO bindings.',
+      },
+      503,
+    )
+  })
+
+  // Schema for an instance
+  app.get('/:binding/:instanceId/storage/schema', async (c) => {
+    const { binding, instanceId } = c.req.param()
+    const resp = await proxyToStorageServer(
+      c.env,
+      `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/schema`,
+    )
+    if (resp) return resp
+    return c.json({ error: 'DO storage server not available' }, 503)
+  })
+
+  // Table info for an instance
+  app.get('/:binding/:instanceId/storage/tables/:table', async (c) => {
+    const { binding, instanceId } = c.req.param()
+    const table = c.req.param('table')
+    const resp = await proxyToStorageServer(
+      c.env,
+      `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/tables/${encodeURIComponent(table)}`,
+    )
+    if (resp) return resp
+    return c.json({ error: 'DO storage server not available' }, 503)
+  })
+
+  // Paginated rows for a table in an instance
+  app.get('/:binding/:instanceId/storage/tables/:table/rows', async (c) => {
+    const { binding, instanceId } = c.req.param()
+    const table = c.req.param('table')
+    const qs = c.req.url.split('?')[1] || ''
+    const path = `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/tables/${encodeURIComponent(table)}/rows${qs ? `?${qs}` : ''}`
+    const resp = await proxyToStorageServer(c.env, path)
+    if (resp) return resp
+    return c.json({ error: 'DO storage server not available' }, 503)
+  })
+
+  // Execute SQL query against an instance
+  app.post('/:binding/:instanceId/storage/query', async (c) => {
+    const { binding, instanceId } = c.req.param()
+    const body = await c.req.text()
+    const resp = await proxyToStorageServer(
+      c.env,
+      `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/query`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      },
+    )
+    if (resp) return resp
+    return c.json({ error: 'DO storage server not available' }, 503)
+  })
+
+  // DurableObjectStorage KV entries for an instance
+  app.get('/:binding/:instanceId/storage/kv', async (c) => {
+    const { binding, instanceId } = c.req.param()
+    const qs = c.req.url.split('?')[1] || ''
+    const path = `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/kv${qs ? `?${qs}` : ''}`
+    const resp = await proxyToStorageServer(c.env, path)
+    if (resp) return resp
+    return c.json({ error: 'DO storage server not available' }, 503)
+  })
+
+  // ── Instance creation / ID resolution ─────────────────────────
 
   // Get DO ID from name or validate existing ID
   app.post('/:binding/id', async (c) => {
@@ -46,15 +141,12 @@ export function createDORoutes() {
       const body = await c.req.json<{ name?: string; id?: string }>()
 
       if (body.id) {
-        // Validate and return hex string ID
         const doId = namespace.idFromString(body.id)
         return c.json({ id: doId.toString() })
       } else if (body.name) {
-        // Generate ID from name
         const doId = namespace.idFromName(body.name)
         return c.json({ id: doId.toString() })
       } else {
-        // Generate a new unique ID
         const doId = namespace.newUniqueId()
         return c.json({ id: doId.toString() })
       }
@@ -63,30 +155,8 @@ export function createDORoutes() {
     }
   })
 
-  // Get a stub for a DO instance
-  app.get('/:binding/instances', async (c) => {
-    const binding = c.req.param('binding')
-    const manifest = getManifest(c.env)
+  // ── Fetch proxy (send HTTP request to a DO instance) ──────────
 
-    const doConfig = manifest.do.find((d) => d.binding === binding)
-    if (!doConfig) {
-      return c.json({ error: 'Durable Object binding not found' }, 404)
-    }
-
-    const namespace = c.env[binding]
-    if (!namespace || typeof namespace !== 'object' || !('idFromName' in namespace)) {
-      return c.json({ error: 'Durable Object namespace not available' }, 404)
-    }
-
-    // Can't list instances directly from namespace - need to track them separately
-    return c.json({
-      binding: doConfig.binding,
-      className: doConfig.className,
-      hint: 'Cannot list instances directly. Use idFromName() or idFromString() to get specific instances.',
-    })
-  })
-
-  // Fetch from a DO instance (proxy through)
   app.all('/:binding/:instanceId/fetch/*', async (c) => {
     const binding = c.req.param('binding')
     const instanceId = c.req.param('instanceId')
@@ -97,7 +167,6 @@ export function createDORoutes() {
     }
 
     try {
-      // Get stub - try as hex ID first, then as name
       let id: DurableObjectId
       try {
         id = namespace.idFromString(instanceId)
@@ -107,11 +176,9 @@ export function createDORoutes() {
 
       const stub = namespace.get(id)
 
-      // Extract the remaining path after /fetch/
       const path = c.req.path.split('/fetch/')[1] || ''
       const url = new URL(`https://do-stub/${path}`)
 
-      // Forward the request
       const response = await stub.fetch(url.toString(), {
         method: c.req.method,
         headers: c.req.raw.headers,
@@ -121,50 +188,6 @@ export function createDORoutes() {
       return response
     } catch (error) {
       return c.json({ error: String(error) }, 500)
-    }
-  })
-
-  // Storage inspection - requires DO to have a /storage endpoint
-  app.get('/:binding/:instanceId/storage', async (c) => {
-    const binding = c.req.param('binding')
-    const instanceId = c.req.param('instanceId')
-
-    const namespace = c.env[binding] as DurableObjectNamespace | undefined
-    if (!namespace || typeof namespace !== 'object' || !('idFromName' in namespace)) {
-      return c.json({ error: 'Durable Object namespace not available' }, 404)
-    }
-
-    try {
-      // Get stub
-      let id: DurableObjectId
-      try {
-        id = namespace.idFromString(instanceId)
-      } catch {
-        id = namespace.idFromName(instanceId)
-      }
-
-      const stub = namespace.get(id)
-
-      // Try to call a /storage endpoint if the DO exposes one
-      const response = await stub.fetch('https://do-stub/storage', {
-        method: 'GET',
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        return c.json(data)
-      }
-
-      return c.json({
-        error: 'Storage inspection not available',
-        hint: 'The Durable Object does not expose a /storage endpoint. Add a handler for GET /storage in your DO to enable this feature.',
-        status: response.status,
-      }, 501)
-    } catch (error) {
-      return c.json({
-        error: String(error),
-        hint: 'To inspect DO storage, add a /storage endpoint to your Durable Object that returns storage.list() results.',
-      }, 500)
     }
   })
 
