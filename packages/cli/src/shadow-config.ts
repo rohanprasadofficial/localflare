@@ -9,7 +9,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, cpSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { createRequire } from 'node:module'
-import { parseWranglerConfig, type WranglerConfig, type LocalflareManifest } from 'localflare-core'
+import { type WranglerConfig, type LocalflareManifest } from 'localflare-core'
 
 /**
  * Convert Windows paths to POSIX-style (forward slashes)
@@ -30,9 +30,6 @@ export function getApiWorkerPath(): string {
   return require.resolve('localflare-api')
 }
 
-/**
- * Create manifest from wrangler config
- */
 /**
  * Check if a var value looks like a secret (common patterns)
  */
@@ -57,6 +54,9 @@ function looksLikeSecret(key: string, value: string): boolean {
   return false
 }
 
+/**
+ * Create manifest from a single wrangler config
+ */
 export function createManifest(config: WranglerConfig): LocalflareManifest {
   return {
     name: config.name || 'worker',
@@ -93,20 +93,130 @@ export function createManifest(config: WranglerConfig): LocalflareManifest {
       value,
       isSecret: looksLikeSecret(key, value),
     })),
+    workers: [],
   }
 }
 
 /**
- * Generate shadow wrangler.toml with bindings from user's config
- * When isPrimary=true, this worker runs as the primary and proxies to user's worker
+ * Create a merged manifest from multiple worker configs.
+ * Deduplicates bindings by binding name, with earlier configs taking priority.
+ */
+export function createMergedManifest(
+  configs: { path: string; config: WranglerConfig }[],
+): LocalflareManifest {
+  if (configs.length === 0) {
+    throw new Error('At least one config is required')
+  }
+
+  const primary = configs[0]
+  const manifest: LocalflareManifest = {
+    name: primary.config.name || 'worker',
+    d1: [],
+    kv: [],
+    r2: [],
+    queues: { producers: [], consumers: [] },
+    do: [],
+    vars: [],
+    workers: configs.map((c) => ({
+      name: c.config.name || 'worker',
+      configPath: c.path,
+    })),
+  }
+
+  const seenD1 = new Set<string>()
+  const seenKV = new Set<string>()
+  const seenR2 = new Set<string>()
+  const seenQueueProducers = new Set<string>()
+  const seenQueueConsumers = new Set<string>()
+  const seenDO = new Set<string>()
+  const seenVars = new Set<string>()
+
+  for (const { config } of configs) {
+    for (const db of config.d1_databases || []) {
+      if (!seenD1.has(db.binding)) {
+        seenD1.add(db.binding)
+        manifest.d1.push({ binding: db.binding, database_name: db.database_name })
+      }
+    }
+    for (const kv of config.kv_namespaces || []) {
+      if (!seenKV.has(kv.binding)) {
+        seenKV.add(kv.binding)
+        manifest.kv.push({ binding: kv.binding })
+      }
+    }
+    for (const r2 of config.r2_buckets || []) {
+      if (!seenR2.has(r2.binding)) {
+        seenR2.add(r2.binding)
+        manifest.r2.push({ binding: r2.binding, bucket_name: r2.bucket_name })
+      }
+    }
+    for (const p of config.queues?.producers || []) {
+      if (!seenQueueProducers.has(p.binding)) {
+        seenQueueProducers.add(p.binding)
+        manifest.queues.producers.push({ binding: p.binding, queue: p.queue })
+      }
+    }
+    for (const c of config.queues?.consumers || []) {
+      if (!seenQueueConsumers.has(c.queue)) {
+        seenQueueConsumers.add(c.queue)
+        manifest.queues.consumers.push({
+          queue: c.queue,
+          max_batch_size: c.max_batch_size,
+          max_batch_timeout: c.max_batch_timeout,
+          max_retries: c.max_retries,
+          dead_letter_queue: c.dead_letter_queue,
+        })
+      }
+    }
+    for (const d of config.durable_objects?.bindings || []) {
+      if (!seenDO.has(d.name)) {
+        seenDO.add(d.name)
+        manifest.do.push({ binding: d.name, className: d.class_name })
+      }
+    }
+    for (const [key, value] of Object.entries(config.vars || {})) {
+      if (!seenVars.has(key)) {
+        seenVars.add(key)
+        manifest.vars.push({ key, value, isSecret: looksLikeSecret(key, value) })
+      }
+    }
+  }
+
+  return manifest
+}
+
+/**
+ * Build a lookup of which worker name defines each DO class (has no script_name itself).
+ * Used so the shadow config references the correct script_name for each DO binding.
+ */
+function buildDOClassOwnerMap(
+  configs: { path: string; config: WranglerConfig }[],
+): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const { config } of configs) {
+    const workerName = config.name || 'user-worker'
+    for (const binding of config.durable_objects?.bindings || []) {
+      // A binding that has no script_name defines the class locally
+      if (!binding.script_name && !map.has(binding.class_name)) {
+        map.set(binding.class_name, workerName)
+      }
+    }
+  }
+  return map
+}
+
+/**
+ * Generate shadow wrangler.toml with merged bindings from multiple configs.
+ * When isPrimary=true, this worker runs as the primary and proxies to user's worker.
  */
 export function generateShadowConfig(
-  config: WranglerConfig,
+  configs: { path: string; config: WranglerConfig }[],
   apiWorkerPath: string,
-  isPrimary: boolean = false
+  isPrimary: boolean = false,
 ): string {
-  const manifest = createManifest(config)
-  const userWorkerName = config.name || 'user-worker'
+  const primary = configs[0]
+  const manifest = createMergedManifest(configs)
+  const userWorkerName = primary.config.name || 'user-worker'
 
   let toml = `# Auto-generated by Localflare CLI
 # DO NOT EDIT - This file is regenerated each time localflare runs
@@ -130,9 +240,12 @@ service = "${userWorkerName}"
 `
   }
 
-  // Copy D1 databases (preserve preview_database_id if set)
-  if (config.d1_databases?.length) {
-    for (const db of config.d1_databases) {
+  // Merge D1 databases (deduplicated)
+  const seenD1 = new Set<string>()
+  for (const { config } of configs) {
+    for (const db of config.d1_databases || []) {
+      if (seenD1.has(db.binding)) continue
+      seenD1.add(db.binding)
       toml += `[[d1_databases]]
 binding = "${db.binding}"
 database_name = "${db.database_name}"
@@ -141,9 +254,12 @@ ${db.preview_database_id ? `preview_database_id = "${db.preview_database_id}"\n`
     }
   }
 
-  // Copy KV namespaces (preserve preview_id if set)
-  if (config.kv_namespaces?.length) {
-    for (const kv of config.kv_namespaces) {
+  // Merge KV namespaces (deduplicated)
+  const seenKV = new Set<string>()
+  for (const { config } of configs) {
+    for (const kv of config.kv_namespaces || []) {
+      if (seenKV.has(kv.binding)) continue
+      seenKV.add(kv.binding)
       toml += `[[kv_namespaces]]
 binding = "${kv.binding}"
 id = "${kv.id}"
@@ -151,9 +267,12 @@ ${kv.preview_id ? `preview_id = "${kv.preview_id}"\n` : ''}`
     }
   }
 
-  // Copy R2 buckets (preserve remote, jurisdiction if set)
-  if (config.r2_buckets?.length) {
-    for (const r2 of config.r2_buckets) {
+  // Merge R2 buckets (deduplicated)
+  const seenR2 = new Set<string>()
+  for (const { config } of configs) {
+    for (const r2 of config.r2_buckets || []) {
+      if (seenR2.has(r2.binding)) continue
+      seenR2.add(r2.binding)
       toml += `[[r2_buckets]]
 binding = "${r2.binding}"
 bucket_name = "${r2.bucket_name}"
@@ -161,9 +280,12 @@ ${r2.remote ? 'remote = true\n' : ''}${r2.jurisdiction ? `jurisdiction = "${r2.j
     }
   }
 
-  // Copy Queue producers (NOT consumers - we only produce)
-  if (config.queues?.producers?.length) {
-    for (const producer of config.queues.producers) {
+  // Merge Queue producers (deduplicated)
+  const seenQueues = new Set<string>()
+  for (const { config } of configs) {
+    for (const producer of config.queues?.producers || []) {
+      if (seenQueues.has(producer.binding)) continue
+      seenQueues.add(producer.binding)
       toml += `[[queues.producers]]
 binding = "${producer.binding}"
 queue = "${producer.queue}"
@@ -171,14 +293,19 @@ ${producer.delivery_delay ? `delivery_delay = ${producer.delivery_delay}\n` : ''
     }
   }
 
-  // Copy Durable Object bindings with script_name reference to user's worker
-  // In multi-config mode, this allows localflare-api to access the same DO instances
-  if (config.durable_objects?.bindings?.length) {
-    for (const doBinding of config.durable_objects.bindings) {
+  // Merge DO bindings (deduplicated), pointing script_name to the worker that defines the class
+  const doClassOwners = buildDOClassOwnerMap(configs)
+  const seenDO = new Set<string>()
+  for (const { config } of configs) {
+    for (const doBinding of config.durable_objects?.bindings || []) {
+      if (seenDO.has(doBinding.name)) continue
+      seenDO.add(doBinding.name)
+      // Point to the worker that defines this DO class
+      const owner = doClassOwners.get(doBinding.class_name) || userWorkerName
       toml += `[[durable_objects.bindings]]
 name = "${doBinding.name}"
 class_name = "${doBinding.class_name}"
-script_name = "${userWorkerName}"
+script_name = "${owner}"
 `
     }
   }
@@ -190,20 +317,20 @@ script_name = "${userWorkerName}"
  * Setup the .localflare directory with shadow config and worker
  * @param isPrimary - If true, localflare-api runs as primary worker and proxies to user's worker
  */
-export function setupLocalflareDir(userConfigPath: string, isPrimary: boolean = true): {
+export function setupLocalflareDir(
+  configs: { path: string; config: WranglerConfig }[],
+  isPrimary: boolean = true,
+): {
   shadowConfigPath: string
   manifest: LocalflareManifest
 } {
-  const configDir = dirname(userConfigPath)
+  const configDir = dirname(configs[0].path)
   const localflareDir = join(configDir, '.localflare')
 
   // Create .localflare directory
   if (!existsSync(localflareDir)) {
     mkdirSync(localflareDir, { recursive: true })
   }
-
-  // Parse user's config
-  const userConfig = parseWranglerConfig(userConfigPath)
 
   // Get the pre-built worker path
   const apiWorkerPath = getApiWorkerPath()
@@ -212,11 +339,11 @@ export function setupLocalflareDir(userConfigPath: string, isPrimary: boolean = 
   const localWorkerPath = join(localflareDir, 'api-worker.js')
   cpSync(apiWorkerPath, localWorkerPath)
 
-  // Generate manifest
-  const manifest = createManifest(userConfig)
+  // Generate merged manifest
+  const manifest = createMergedManifest(configs)
 
-  // Generate shadow config
-  const shadowConfig = generateShadowConfig(userConfig, localWorkerPath, isPrimary)
+  // Generate shadow config with merged bindings
+  const shadowConfig = generateShadowConfig(configs, localWorkerPath, isPrimary)
 
   // Write shadow config
   const shadowConfigPath = join(localflareDir, 'wrangler.toml')
