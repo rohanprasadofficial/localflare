@@ -1,5 +1,5 @@
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, extname } from "node:path";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { resolve, extname, dirname, join } from "node:path";
 import { parse as parseToml } from "toml";
 import parseJsonc from "tiny-jsonc";
 import type { WranglerConfig, DiscoveredBindings } from "./types.js";
@@ -131,4 +131,123 @@ export function getBindingSummary(bindings: DiscoveredBindings): string[] {
   }
 
   return summary;
+}
+
+const EXCLUDED_DIRS = new Set([
+  "node_modules",
+  ".localflare",
+  ".wrangler",
+  "dist",
+  "build",
+  ".git",
+]);
+
+/**
+ * Extract all script_name references from DO bindings, workflows, and services
+ * @param config - Parsed wrangler configuration
+ * @returns Array of unique script names referenced by this config
+ */
+export function extractReferencedScriptNames(config: WranglerConfig): string[] {
+  const names = new Set<string>();
+
+  for (const binding of config.durable_objects?.bindings ?? []) {
+    if (binding.script_name) names.add(binding.script_name);
+  }
+  for (const workflow of config.workflows ?? []) {
+    if (workflow.script_name) names.add(workflow.script_name);
+  }
+  for (const service of config.services ?? []) {
+    if (service.service) names.add(service.service);
+  }
+
+  return [...names];
+}
+
+/**
+ * Recursively search for a wrangler config whose `name` field matches the given name
+ * @param directory - Root directory to search in
+ * @param name - Worker name to match against config `name` field
+ * @returns Path to the matching config file, or null if not found
+ */
+export function findWranglerConfigByName(
+  directory: string,
+  name: string
+): string | null {
+  const dir = resolve(directory);
+
+  // Check this directory for wrangler configs
+  for (const filename of WRANGLER_CONFIG_FILES) {
+    const configPath = join(dir, filename);
+    if (existsSync(configPath)) {
+      try {
+        const config = parseWranglerConfig(configPath);
+        if (config.name === name) {
+          return configPath;
+        }
+      } catch {
+        // Skip unparseable configs
+      }
+    }
+  }
+
+  // Recurse into subdirectories
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return null;
+  }
+
+  for (const entry of entries) {
+    if (EXCLUDED_DIRS.has(entry) || entry.startsWith(".")) continue;
+    const fullPath = join(dir, entry);
+    try {
+      if (statSync(fullPath).isDirectory()) {
+        const found = findWranglerConfigByName(fullPath, name);
+        if (found) return found;
+      }
+    } catch {
+      // Skip inaccessible entries
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Starting from a root config, discover all referenced worker configs via script_name
+ * @param rootConfigPath - Path to the root wrangler config file
+ * @returns Array of {path, config} for the root and all transitively discovered workers
+ */
+export function resolveAllConfigs(
+  rootConfigPath: string
+): { path: string; config: WranglerConfig }[] {
+  const resolvedPath = resolve(rootConfigPath);
+  const rootConfig = parseWranglerConfig(resolvedPath);
+  const rootDir = dirname(resolvedPath);
+
+  const results: { path: string; config: WranglerConfig }[] = [
+    { path: resolvedPath, config: rootConfig },
+  ];
+
+  const seen = new Set<string>([resolvedPath]);
+  const scriptNames = extractReferencedScriptNames(rootConfig);
+
+  for (const name of scriptNames) {
+    const configPath = findWranglerConfigByName(rootDir, name);
+    if (configPath && !seen.has(configPath)) {
+      seen.add(configPath);
+      const config = parseWranglerConfig(configPath);
+      results.push({ path: configPath, config });
+
+      // Also discover transitive references
+      for (const transitiveName of extractReferencedScriptNames(config)) {
+        if (!scriptNames.includes(transitiveName)) {
+          scriptNames.push(transitiveName);
+        }
+      }
+    }
+  }
+
+  return results;
 }
