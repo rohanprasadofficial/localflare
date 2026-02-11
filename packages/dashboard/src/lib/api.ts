@@ -6,17 +6,20 @@
  * - In local bundled mode: uses relative path
  */
 export function getApiBase(): string {
-  // Check if we're on studio.localflare.dev or localhost:5174 (Dashboard Vite dev server)
+  // Check if we're on studio.localflare.dev or loopback:5174 (Dashboard Vite dev server)
+  const loopbackHosts = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : ''
   const isHostedMode =
     typeof window !== 'undefined' &&
     (window.location.hostname === 'studio.localflare.dev' ||
-      (window.location.hostname === 'localhost' && window.location.port === '5174'))
+      (loopbackHosts.has(hostname) && window.location.port === '5174'))
 
   if (isHostedMode) {
-    // Hosted mode: API is on localhost with port from URL
+    // Hosted mode: API is on localhost (studio) or same loopback host (dev), with port from URL
     const params = new URLSearchParams(window.location.search)
     const port = params.get('port') || '8788'
-    return `http://localhost:${port}/__localflare`
+    const apiHost = hostname === 'studio.localflare.dev' ? 'localhost' : hostname
+    return `http://${apiHost}:${port}/__localflare`
   }
 
   // Local bundled mode: API is served from same origin
