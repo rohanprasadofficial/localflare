@@ -18,7 +18,7 @@ Be respectful, constructive, and collaborative. We're all here to make local Clo
 
 ### Prerequisites
 
-- **Node.js 18+** (we recommend using [nvm](https://github.com/nvm-sh/nvm))
+- **Node.js 22.13+** (we recommend using [nvm](https://github.com/nvm-sh/nvm))
 - **pnpm 9+** - Install with `npm install -g pnpm`
 - **A Cloudflare Workers project** for testing
 

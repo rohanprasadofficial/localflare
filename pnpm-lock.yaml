@@ -127,9 +127,15 @@ importers:
 
   packages/cli:
     dependencies:
+      '@hono/node-server':
+        specifier: ^1.19.9
+        version: 1.19.9(hono@4.11.3)
       cac:
         specifier: ^6.7.14
         version: 6.7.14
+      hono:
+        specifier: ^4.6.14
+        version: 4.11.3
       ink:
         specifier: ^6.6.0
         version: 6.6.0(@types/react@19.2.7)(react@19.2.3)
@@ -152,6 +158,9 @@ importers:
         specifier: ^19.0.0
         version: 19.2.3
     devDependencies:
+      '@types/node':
+        specifier: ^22.10.2
+        version: 22.19.3
       '@types/react':
         specifier: ^19.0.2
         version: 19.2.7
@@ -1189,6 +1198,12 @@ packages:
 
   '@fontsource-variable/figtree@5.2.10':
     resolution: {integrity: sha512-a5Gumbpy3mdd+Yg31g6Qb7CmjYbrfyutJa3bWfP5q8A4GclIOwX7mI+ZuSHsJnw/mHvW6r9oh1AHJcJTIxK4JA==}
+
+  '@hono/node-server@1.19.9':
+    resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
 
   '@hugeicons/core-free-icons@3.1.1':
     resolution: {integrity: sha512-UpS2lUQFi5sKyJSWwM6rO+BnPLvVz1gsyCpPHeZyVuZqi89YH8ksliza4cwaODqKOZyeXmG8juo1ty4QtQofkg==}
@@ -3870,6 +3885,10 @@ snapshots:
   '@floating-ui/utils@0.2.10': {}
 
   '@fontsource-variable/figtree@5.2.10': {}
+
+  '@hono/node-server@1.19.9(hono@4.11.3)':
+    dependencies:
+      hono: 4.11.3
 
   '@hugeicons/core-free-icons@3.1.1': {}
 

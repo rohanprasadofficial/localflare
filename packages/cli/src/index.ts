@@ -1,12 +1,13 @@
 import { cac } from 'cac'
 import pc from 'picocolors'
 import { spawn } from 'node:child_process'
-import { findWranglerConfig, WRANGLER_CONFIG_FILES } from 'localflare-core'
+import { findWranglerConfig, WRANGLER_CONFIG_FILES, parseWranglerConfig } from 'localflare-core'
 import { existsSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import open from 'open'
-import { setupLocalflareDir, formatBindings } from './shadow-config.js'
+import { setupLocalflareDir, formatBindings, createManifest } from './shadow-config.js'
 import { startTui, type TuiInstance } from './tui/index.js'
+import { startDOStorageServer, getAvailablePort } from './do-storage.js'
 
 const cli = cac('localflare')
 
@@ -15,6 +16,39 @@ const cli = cac('localflare')
 const rawArgs = process.argv.slice(2)
 const dashDashIndex = rawArgs.indexOf('--')
 const wranglerPassthrough = dashDashIndex >= 0 ? rawArgs.slice(dashDashIndex + 1) : []
+const needsShell = process.platform === 'win32'
+
+type ClosableServer = { close: () => void }
+
+async function setupDOStorageServer(
+  resolvedConfig: string,
+  persistPath: string,
+): Promise<{ extraVars: Record<string, string>; doStorageServer: ClosableServer | null }> {
+  const userConfig = parseWranglerConfig(resolvedConfig)
+  const doBindings = userConfig.durable_objects?.bindings || []
+  const extraVars: Record<string, string> = {}
+
+  if (doBindings.length === 0) {
+    return { extraVars, doStorageServer: null }
+  }
+
+  try {
+    const doStoragePort = await getAvailablePort()
+    const manifest = createManifest(userConfig)
+    const doStorageServer = startDOStorageServer(
+      { persistPath, manifest },
+      doStoragePort,
+    )
+
+    extraVars.LOCALFLARE_DO_STORAGE_URL = `http://localhost:${doStoragePort}`
+    console.log(pc.dim(`  📦 DO storage server on port ${doStoragePort}`))
+
+    return { extraVars, doStorageServer }
+  } catch (err) {
+    console.log(pc.yellow(`  ⚠ Could not start DO storage server: ${err}`))
+    return { extraVars, doStorageServer: null }
+  }
+}
 
 cli
   .command('[configPath]', 'Start Localflare development server')
@@ -25,7 +59,7 @@ cli
   .option('--no-tui', 'Disable TUI, use simple console output')
   .option(
     '--persist-to <path>',
-    'Persistence directory for D1/KV/R2 data (default: .wrangler/state)',
+    'Persistence directory for D1/KV/R2/DO data (default: .wrangler/state)',
   )
   .action(async (configPath: string | undefined, options) => {
     console.log('')
@@ -60,8 +94,18 @@ cli
     console.log(pc.dim(`  👀 Detected: ${resolvedConfig}`))
 
     try {
+      // Determine persist path early — needed for DO storage server
+      const persistPath = options.persistTo
+        ? resolve(options.persistTo)
+        : join(dirname(resolvedConfig), '.wrangler', 'state')
+
+      const { extraVars, doStorageServer } = await setupDOStorageServer(
+        resolvedConfig,
+        persistPath,
+      )
+
       // Setup .localflare directory with shadow config
-      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, true)
+      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, true, extraVars)
 
       // Display linked bindings
       const bindingLines = formatBindings(manifest)
@@ -77,14 +121,6 @@ cli
       console.log('')
       console.log(pc.dim(`  🚀 Starting Development Environment...`))
       console.log('')
-
-      // Spawn wrangler dev with both configs
-      // localflare-api is PRIMARY (first) - handles /__localflare/* and proxies rest to user's worker
-      // user's worker is SECONDARY (second) - accessed via service binding
-      // --persist-to ensures both workers share the same state directory
-      const persistPath = options.persistTo
-        ? resolve(options.persistTo)
-        : join(dirname(resolvedConfig), '.wrangler', 'state')
 
       // Build wrangler args
       // Use passthrough args (after --) for any wrangler-specific options
@@ -106,7 +142,7 @@ cli
       const wranglerProcess = spawn('npx', wranglerArgs, {
         cwd: dirname(resolvedConfig),
         stdio: ['inherit', 'pipe', 'pipe'],
-        shell: true,
+        shell: needsShell,
       })
 
       let started = false
@@ -198,6 +234,9 @@ cli
       // Handle wrangler exit
       wranglerProcess.on('close', (code) => {
         tui?.unmount()
+        if (doStorageServer) {
+          doStorageServer.close()
+        }
         if (code !== 0 && code !== null) {
           console.log('')
           console.log(pc.red(`  ✗ Wrangler exited with code ${code}`))
@@ -212,6 +251,9 @@ cli
       const shutdown = () => {
         tui?.unmount()
         wranglerProcess.kill('SIGTERM')
+        if (doStorageServer) {
+          doStorageServer.close()
+        }
       }
 
       process.on('SIGINT', shutdown)
@@ -233,7 +275,7 @@ cli
   .option('--no-open', 'Do not open browser automatically')
   .option(
     '--persist-to <path>',
-    'Persistence directory for D1/KV/R2 data (default: .wrangler/state)',
+    'Persistence directory for D1/KV/R2/DO data (default: .wrangler/state)',
   )
   .action(async (configPath: string | undefined, options) => {
     console.log('')
@@ -264,8 +306,18 @@ cli
     console.log(pc.dim(`  👀 Detected: ${resolvedConfig}`))
 
     try {
+      // Determine persist path early — needed for DO storage server
+      const persistPath = options.persistTo
+        ? resolve(options.persistTo)
+        : join(dirname(resolvedConfig), '.wrangler', 'state')
+
+      const { extraVars, doStorageServer } = await setupDOStorageServer(
+        resolvedConfig,
+        persistPath,
+      )
+
       // Setup .localflare directory (but don't add service binding - standalone mode)
-      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, false) // isPrimary=false
+      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, false, extraVars) // isPrimary=false
 
       // Display bindings
       const bindingLines = formatBindings(manifest)
@@ -280,11 +332,6 @@ cli
       console.log(pc.dim(`  🚀 Starting Localflare API on port ${apiPort}...`))
       console.log('')
 
-      // --persist-to ensures both workers share the same state directory
-      const persistPath = options.persistTo
-        ? resolve(options.persistTo)
-        : join(dirname(resolvedConfig), '.wrangler', 'state')
-
       const wranglerArgs = [
         'wrangler', 'dev',
         '-c', shadowConfigPath,
@@ -295,7 +342,7 @@ cli
       const wranglerProcess = spawn('npx', wranglerArgs, {
         cwd: dirname(resolvedConfig),
         stdio: ['inherit', 'pipe', 'pipe'],
-        shell: true,
+        shell: needsShell,
       })
 
       let started = false
@@ -337,6 +384,9 @@ cli
       })
 
       wranglerProcess.on('close', (code) => {
+        if (doStorageServer) {
+          doStorageServer.close()
+        }
         if (code !== 0 && code !== null) {
           console.log(pc.red(`  ✗ Localflare API exited with code ${code}`))
         }
@@ -346,6 +396,9 @@ cli
       // Handle shutdown
       const shutdown = () => {
         wranglerProcess.kill('SIGTERM')
+        if (doStorageServer) {
+          doStorageServer.close()
+        }
       }
       process.on('SIGINT', shutdown)
       process.on('SIGTERM', shutdown)

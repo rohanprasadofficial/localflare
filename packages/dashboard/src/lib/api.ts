@@ -183,8 +183,6 @@ export const queuesApi = {
 // Durable Objects
 export const doApi = {
   list: () => fetchApi<{ durableObjects: DurableObject[] }>('/do'),
-  getInstances: () =>
-    fetchApi<{ instances: DOInstance[] }>('/do/instances'),
   getId: (binding: string, options: { name?: string; id?: string }) =>
     fetchApi<{ id: string }>(`/do/${binding}/id`, {
       method: 'POST',
@@ -200,12 +198,64 @@ export const doApi = {
     })
     return response
   },
+  // Storage inspection (reads SQLite files from disk via CLI server)
+  getStorageInstances: (binding: string) =>
+    fetchApi<{ instances: DOStorageInstance[]; binding: string; className: string }>(
+      `/do/${encodeURIComponent(binding)}/storage/instances`,
+    ),
+  getStorageSchema: (binding: string, instanceId: string) =>
+    fetchApi<{ tables: { name: string; sql: string }[] }>(
+      `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/storage/schema`,
+    ),
+  getStorageTableInfo: (binding: string, instanceId: string, table: string) =>
+    fetchApi<{
+      table: string
+      columns: D1Column[]
+      primaryKeys: string[]
+      indexes: unknown[]
+      foreignKeys: unknown[]
+      rowCount: number
+    }>(`/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/storage/tables/${encodeURIComponent(table)}`),
+  getStorageRows: (
+    binding: string,
+    instanceId: string,
+    table: string,
+    limit = 50,
+    offset = 0,
+    sort?: string,
+    dir?: 'asc' | 'desc',
+  ) => {
+    const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
+    if (sort) params.set('sort', sort)
+    if (dir) params.set('dir', dir)
+    return fetchApi<{ rows: Record<string, unknown>[]; meta: { limit: number; offset: number } }>(
+      `/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/storage/tables/${encodeURIComponent(table)}/rows?${params}`,
+    )
+  },
+  getStorageKV: (binding: string, instanceId: string, limit = 100, offset = 0, prefix?: string) => {
+    const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
+    if (prefix) params.set('prefix', prefix)
+    return fetchApi<{
+      entries: Array<{ key: string; value: unknown }>
+      meta: { limit: number; offset: number; total: number }
+    }>(`/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/storage/kv?${params}`)
+  },
+  executeStorageQuery: (binding: string, instanceId: string, sql: string, params: unknown[] = []) =>
+    fetchApi<{
+      success: boolean
+      results?: unknown[]
+      rowCount?: number
+      meta?: { changes?: number; last_row_id?: number | bigint }
+    }>(`/do/${encodeURIComponent(binding)}/${encodeURIComponent(instanceId)}/storage/query`, {
+      method: 'POST',
+      body: JSON.stringify({ sql, params }),
+    }),
 }
 
-export interface DOInstance extends Record<string, unknown> {
-  binding: string
-  class_name: string
+export interface DOStorageInstance extends Record<string, unknown> {
   id: string
+  binding: string
+  className: string
 }
 
 // Types

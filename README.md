@@ -102,7 +102,7 @@ Options:
   --no-open                Don't open browser automatically
   --no-tui                 Disable TUI, use simple console output
   --dev                    Open local dashboard instead of studio.localflare.dev
-  --persist-to <path>     Persistence directory for D1/KV/R2 data (default: .wrangler/state)
+  --persist-to <path>     Persistence directory for D1/KV/R2/DO data (default: .wrangler/state)
   -h, --help               Display help
   --version                Display version
 
@@ -112,12 +112,12 @@ Options:
   -p, --port <port>        Localflare API port (default: 8788)
   --no-open                Don't open browser automatically
   --dev                    Open local dashboard instead of studio.localflare.dev
-  --persist-to <path>     Persistence directory for D1/KV/R2 data (default: .wrangler/state)
+  --persist-to <path>     Persistence directory for D1/KV/R2/DO data (default: .wrangler/state)
 ```
 
 ## Requirements
 
-- **Node.js 18+**
+- **Node.js 22.13+**
 - **A Cloudflare Workers project** with `wrangler.toml`
 - **wrangler dev** must work for your project (Localflare runs alongside wrangler)
 
