@@ -1,15 +1,13 @@
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Database02Icon,
+  DatabaseIcon,
   HardDriveIcon,
-  Folder01Icon,
-  Layers01Icon,
-  LinkSquare01Icon,
-  RefreshIcon,
-} from "@hugeicons/core-free-icons"
-import { cn } from "@/lib/utils"
+  FolderIcon,
+  StackIcon,
+  LinkIcon,
+  ArrowsClockwiseIcon,
+} from "@phosphor-icons/react"
+import { cn } from "@cloudflare/kumo"
 
-// Browser icons as components
 function ChromeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -78,7 +76,7 @@ export function LandingPage({ onRetry }: LandingPageProps) {
   const port = new URLSearchParams(window.location.search).get('port') || '8787'
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-b from-background to-muted/30 flex flex-col">
+    <div className="h-screen overflow-hidden bg-kumo-base flex flex-col">
       {/* Header */}
       <header className="px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
@@ -88,98 +86,73 @@ export function LandingPage({ onRetry }: LandingPageProps) {
           <span className="font-semibold text-lg">Localflare</span>
         </div>
         <div className="flex items-center gap-4">
-          <a
-            href="https://github.com/rohanprasadofficial/localflare"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <a href="https://github.com/rohanprasadofficial/localflare" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-kumo-strong hover:text-kumo-default transition-colors">
             <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
             </svg>
             GitHub
           </a>
-          <a
-            href="https://x.com/rohanpdofficial"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <a href="https://x.com/rohanpdofficial" target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-kumo-strong hover:text-kumo-default transition-colors">
             <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
             Follow
           </a>
-          <a
-            href="https://localflare.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <HugeiconsIcon icon={LinkSquare01Icon} className="size-4" strokeWidth={2} />
+          <a href="https://localflare.dev" target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm text-kumo-strong hover:text-kumo-default transition-colors">
+            <LinkIcon size={16} />
             localflare.dev
           </a>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-4">
         {/* Animated Icons */}
         <div className="flex items-center gap-2.5 mb-5">
           {[
-            { icon: Database02Icon, color: "text-d1", delay: "0s" },
-            { icon: HardDriveIcon, color: "text-kv", delay: "0.1s" },
-            { icon: Folder01Icon, color: "text-r2", delay: "0.2s" },
-            { icon: Layers01Icon, color: "text-do", delay: "0.3s" },
+            { Icon: DatabaseIcon, color: "text-d1", delay: "0s" },
+            { Icon: HardDriveIcon, color: "text-kv", delay: "0.1s" },
+            { Icon: FolderIcon, color: "text-r2", delay: "0.2s" },
+            { Icon: StackIcon, color: "text-do", delay: "0.3s" },
           ].map((item, i) => (
             <div
               key={i}
-              className="p-2.5 rounded-xl bg-card border border-border shadow-sm animate-bounce"
+              className="p-2.5 rounded-xl bg-kumo-base border border-kumo-line shadow-sm animate-bounce"
               style={{ animationDelay: item.delay, animationDuration: "2s" }}
             >
-              <HugeiconsIcon
-                icon={item.icon}
-                className={cn("size-5", item.color)}
-                strokeWidth={2}
-              />
+              <item.Icon size={20} className={item.color} />
             </div>
           ))}
         </div>
 
-        {/* Title */}
-        <h1 className="text-2xl font-bold text-center mb-2">
-          Waiting for Localflare
-        </h1>
-        <p className="text-sm text-muted-foreground text-center max-w-md mb-5">
+        <h1 className="text-2xl font-bold text-center mb-2">Waiting for Localflare</h1>
+        <p className="text-sm text-kumo-strong text-center max-w-md mb-5">
           Start Localflare in your Worker project to view and manage your Cloudflare bindings locally.
         </p>
 
-        {/* Check Connection Button */}
         <div className="flex items-center gap-3 mb-5">
           <button
             onClick={onRetry}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-kumo-brand text-white rounded-lg hover:bg-kumo-brand-hover transition-colors font-medium text-sm"
           >
-            <HugeiconsIcon icon={RefreshIcon} className="size-4" strokeWidth={2} />
+            <ArrowsClockwiseIcon size={16} />
             Check Connection
           </button>
-          <span className="text-xs text-muted-foreground">
-            <code className="px-1.5 py-0.5 bg-muted rounded">localhost:{port}</code>
+          <span className="text-xs text-kumo-strong">
+            <code className="px-1.5 py-0.5 bg-kumo-fill rounded">localhost:{port}</code>
           </span>
         </div>
 
-        {/* Chrome Warning Banner */}
-        <div className="w-full max-w-2xl mb-4 bg-card border border-border rounded-xl p-3.5 flex items-start gap-3">
+        {/* Chrome Warning */}
+        <div className="w-full max-w-2xl mb-4 bg-kumo-base border border-kumo-line rounded-xl p-3.5 flex items-start gap-3">
           <ChromeIcon className="size-7 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-kumo-strong">
               Recent Chrome/Chromium updates may block{" "}
-              <a
-                href="https://developer.chrome.com/blog/local-network-access"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
+              <a href="https://developer.chrome.com/blog/local-network-access" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                 local network access
               </a>{" "}
               by default. Open "Site information" in the URL bar and make sure "Local network access" is enabled.
@@ -187,43 +160,30 @@ export function LandingPage({ onRetry }: LandingPageProps) {
           </div>
         </div>
 
-        {/* Browser Troubleshooting Cards */}
+        {/* Troubleshooting Cards */}
         <div className="w-full max-w-2xl grid md:grid-cols-2 gap-4">
-          {/* Localflare CLI Card */}
-          <div className="bg-card border border-border rounded-xl p-4">
+          <div className="bg-kumo-base border border-kumo-line rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
                 <span className="text-white font-bold text-xs">L</span>
               </div>
               <span className="font-medium">Localflare CLI</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">
-              Make sure Localflare is up and running
-            </p>
+            <p className="text-sm text-kumo-strong mb-2">Make sure Localflare is up and running</p>
             <ol className="text-sm space-y-1.5">
               <li className="flex items-start gap-2">
-                <span className="text-muted-foreground">1.</span>
-                <span>
-                  Check out our{" "}
-                  <a
-                    href="https://github.com/rohanprasadofficial/localflare#readme"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    installation guide
-                  </a>
+                <span className="text-kumo-strong">1.</span>
+                <span>Check out our{" "}
+                  <a href="https://github.com/rohanprasadofficial/localflare#readme" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">installation guide</a>
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-muted-foreground">2.</span>
-                <span>
-                  Run <code className="px-1.5 py-0.5 bg-muted rounded text-xs">npx localflare</code>
-                </span>
+                <span className="text-kumo-strong">2.</span>
+                <span>Run <code className="px-1.5 py-0.5 bg-kumo-fill rounded text-xs">npx localflare</code></span>
               </li>
             </ol>
-            <div className="mt-3 pt-3 border-t border-border">
-              <p className="text-xs text-muted-foreground">
+            <div className="mt-3 pt-3 border-t border-kumo-line">
+              <p className="text-xs text-kumo-strong">
                 Still experiencing issues? Contact us on{" "}
                 <a href="https://x.com/rohanpdofficial" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">X</a>
                 {" "}or{" "}
@@ -232,63 +192,54 @@ export function LandingPage({ onRetry }: LandingPageProps) {
             </div>
           </div>
 
-          {/* Safari/Brave Card */}
-          <div className="bg-card border border-border rounded-xl p-4">
+          <div className="bg-kumo-base border border-kumo-line rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <SafariIcon className="size-7" />
               <BraveIcon className="size-7" />
               <span className="font-medium">Using Safari or Brave?</span>
             </div>
-            <p className="text-sm text-muted-foreground mb-2">
+            <p className="text-sm text-kumo-strong mb-2">
               These browsers block localhost by default. Install{" "}
               <a href="https://github.com/FiloSottile/mkcert" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">mkcert</a>:
             </p>
             <ol className="text-sm space-y-1.5">
               <li className="flex items-start gap-2">
-                <span className="text-muted-foreground">1.</span>
-                <span>
-                  Follow the{" "}
+                <span className="text-kumo-strong">1.</span>
+                <span>Follow the{" "}
                   <a href="https://github.com/FiloSottile/mkcert#installation" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">installation steps</a>
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-muted-foreground">2.</span>
-                <span>
-                  Run <code className="px-1.5 py-0.5 bg-muted rounded text-xs">mkcert -install</code>
-                </span>
+                <span className="text-kumo-strong">2.</span>
+                <span>Run <code className="px-1.5 py-0.5 bg-kumo-fill rounded text-xs">mkcert -install</code></span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-muted-foreground">3.</span>
+                <span className="text-kumo-strong">3.</span>
                 <span>Restart your browser</span>
               </li>
             </ol>
-            <p className="text-xs text-muted-foreground mt-2">
-              On Brave you can also just disable Brave Shields.
-            </p>
+            <p className="text-xs text-kumo-strong mt-2">On Brave you can also just disable Brave Shields.</p>
           </div>
         </div>
 
         {/* Features */}
         <div className="mt-5 flex items-center gap-5">
           {[
-            { label: "D1 Databases", icon: Database02Icon, color: "text-d1" },
-            { label: "KV Storage", icon: HardDriveIcon, color: "text-kv" },
-            { label: "R2 Buckets", icon: Folder01Icon, color: "text-r2" },
-            { label: "Durable Objects", icon: Layers01Icon, color: "text-do" },
+            { label: "D1 Databases", Icon: DatabaseIcon, color: "text-d1" },
+            { label: "KV Storage", Icon: HardDriveIcon, color: "text-kv" },
+            { label: "R2 Buckets", Icon: FolderIcon, color: "text-r2" },
+            { label: "Durable Objects", Icon: StackIcon, color: "text-do" },
           ].map((feature) => (
-            <div key={feature.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <HugeiconsIcon icon={feature.icon} className={cn("size-4", feature.color)} strokeWidth={2} />
+            <div key={feature.label} className="flex items-center gap-1.5 text-xs text-kumo-strong">
+              <feature.Icon size={16} className={cn(feature.color)} />
               {feature.label}
             </div>
           ))}
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="px-6 py-3 flex items-center justify-center shrink-0">
-        <p className="text-xs text-muted-foreground">
-          Built with love for the Cloudflare community
-        </p>
+        <p className="text-xs text-kumo-strong">Built with love for the Cloudflare community</p>
       </footer>
     </div>
   )
