@@ -1,7 +1,6 @@
 import * as React from "react"
-import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react"
-import { Loading03Icon } from "@hugeicons/core-free-icons"
-import { cn } from "@/lib/utils"
+import { SpinnerIcon, type Icon } from "@phosphor-icons/react"
+import { cn } from "@cloudflare/kumo"
 
 export interface Column<T> {
   key: string
@@ -15,7 +14,7 @@ interface DataTableProps<T> {
   columns: Column<T>[]
   data: T[]
   isLoading?: boolean
-  emptyIcon?: IconSvgElement
+  emptyIcon?: Icon
   emptyTitle?: string
   emptyDescription?: string
   onRowClick?: (row: T, index: number) => void
@@ -28,10 +27,10 @@ function DataTableSkeleton({ columns }: { columns: number }) {
   return (
     <>
       {[...Array(5)].map((_, i) => (
-        <tr key={i} className="border-b border-border">
+        <tr key={i} className="border-b border-kumo-line">
           {[...Array(columns)].map((_, j) => (
             <td key={j} className="px-4 py-3">
-              <div className="h-4 bg-muted rounded animate-pulse" />
+              <div className="h-4 bg-kumo-fill rounded animate-pulse" />
             </td>
           ))}
         </tr>
@@ -44,7 +43,7 @@ export function DataTable<T extends Record<string, unknown>>({
   columns,
   data,
   isLoading = false,
-  emptyIcon,
+  emptyIcon: EmptyIcon,
   emptyTitle = "No data",
   emptyDescription = "No items to display",
   onRowClick,
@@ -73,15 +72,15 @@ export function DataTable<T extends Record<string, unknown>>({
 
   if (isLoading) {
     return (
-      <div className={cn("border border-border rounded-lg overflow-hidden", className)}>
+      <div className={cn("border border-kumo-line rounded-lg overflow-hidden", className)}>
         <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="border-b border-border">
+          <thead className="bg-kumo-tint/50">
+            <tr className="border-b border-kumo-line">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide",
+                    "px-4 py-3 text-xs font-medium text-kumo-strong uppercase tracking-wide",
                     col.align === "center" && "text-center",
                     col.align === "right" && "text-right"
                   )}
@@ -93,7 +92,7 @@ export function DataTable<T extends Record<string, unknown>>({
               {actions && <th className="px-4 py-3 w-12" />}
             </tr>
           </thead>
-          <tbody className="bg-card">
+          <tbody className="bg-kumo-base">
             <DataTableSkeleton columns={columns.length + (actions ? 1 : 0)} />
           </tbody>
         </table>
@@ -103,15 +102,15 @@ export function DataTable<T extends Record<string, unknown>>({
 
   if (data.length === 0) {
     return (
-      <div className={cn("border border-border rounded-lg overflow-hidden", className)}>
+      <div className={cn("border border-kumo-line rounded-lg overflow-hidden", className)}>
         <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="border-b border-border">
+          <thead className="bg-kumo-tint/50">
+            <tr className="border-b border-kumo-line">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide",
+                    "px-4 py-3 text-xs font-medium text-kumo-strong uppercase tracking-wide",
                     col.align === "center" && "text-center",
                     col.align === "right" && "text-right"
                   )}
@@ -124,31 +123,27 @@ export function DataTable<T extends Record<string, unknown>>({
             </tr>
           </thead>
         </table>
-        <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-card">
-          {emptyIcon && (
-            <HugeiconsIcon
-              icon={emptyIcon}
-              className="size-10 text-muted-foreground/50 mb-3"
-              strokeWidth={1.5}
-            />
+        <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-kumo-base">
+          {EmptyIcon && (
+            <EmptyIcon size={40} className="text-kumo-subtle mb-3" />
           )}
-          <p className="text-sm font-medium text-foreground">{emptyTitle}</p>
-          <p className="text-xs text-muted-foreground mt-1">{emptyDescription}</p>
+          <p className="text-sm font-medium text-kumo-default">{emptyTitle}</p>
+          <p className="text-xs text-kumo-strong mt-1">{emptyDescription}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className={cn("border border-border rounded-lg overflow-hidden", className)}>
+    <div className={cn("border border-kumo-line rounded-lg overflow-hidden", className)}>
       <table className="w-full text-sm">
-        <thead className="bg-muted/50">
-          <tr className="border-b border-border">
+        <thead className="bg-kumo-tint/50">
+          <tr className="border-b border-kumo-line">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={cn(
-                  "px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide text-left",
+                  "px-4 py-3 text-xs font-medium text-kumo-strong uppercase tracking-wide text-left",
                   col.align === "center" && "text-center",
                   col.align === "right" && "text-right"
                 )}
@@ -160,13 +155,13 @@ export function DataTable<T extends Record<string, unknown>>({
             {actions && <th className="px-4 py-3 w-12" />}
           </tr>
         </thead>
-        <tbody className="bg-card divide-y divide-border">
+        <tbody className="bg-kumo-base divide-y divide-kumo-line">
           {data.map((row, rowIndex) => (
             <tr
               key={getKey(row, rowIndex)}
               className={cn(
                 "transition-colors",
-                onRowClick && "cursor-pointer hover:bg-muted/50"
+                onRowClick && "cursor-pointer hover:bg-kumo-tint/50"
               )}
               onClick={() => onRowClick?.(row, rowIndex)}
             >
@@ -176,7 +171,7 @@ export function DataTable<T extends Record<string, unknown>>({
                   <td
                     key={col.key}
                     className={cn(
-                      "px-4 py-3 text-foreground",
+                      "px-4 py-3 text-kumo-default",
                       col.align === "center" && "text-center",
                       col.align === "right" && "text-right"
                     )}
@@ -184,7 +179,7 @@ export function DataTable<T extends Record<string, unknown>>({
                     {col.render ? (
                       col.render(value, row, rowIndex)
                     ) : value === null || value === undefined ? (
-                      <span className="text-muted-foreground italic">-</span>
+                      <span className="text-kumo-strong italic">-</span>
                     ) : (
                       String(value)
                     )}
@@ -207,11 +202,7 @@ export function DataTable<T extends Record<string, unknown>>({
 export function DataTableLoading() {
   return (
     <div className="flex items-center justify-center py-12">
-      <HugeiconsIcon
-        icon={Loading03Icon}
-        className="size-6 animate-spin text-muted-foreground"
-        strokeWidth={2}
-      />
+      <SpinnerIcon size={24} className="animate-spin text-kumo-strong" />
     </div>
   )
 }

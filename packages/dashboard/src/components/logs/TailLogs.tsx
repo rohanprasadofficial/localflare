@@ -1,24 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useMutation } from "@tanstack/react-query"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Delete02Icon,
+  TrashIcon,
   PauseIcon,
   PlayIcon,
-  CommandLineIcon,
-} from "@hugeicons/core-free-icons"
+  TerminalIcon,
+} from "@phosphor-icons/react"
 import { logsApi, getApiBase, type LogEntry } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { PageHeader } from "@/components/ui/page-header"
-import { cn } from "@/lib/utils"
+import { cn } from "@cloudflare/kumo"
 
 const levelColors: Record<LogEntry["level"], string> = {
-  log: "text-foreground",
+  log: "text-kumo-default",
   info: "text-blue-600",
   warn: "text-yellow-600",
   error: "text-red-600",
-  debug: "text-muted-foreground",
+  debug: "text-kumo-strong",
 }
 
 export function TailLogs() {
@@ -86,13 +84,9 @@ export function TailLogs() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <PageHeader
-          icon={CommandLineIcon}
-          iconColor="text-green-500"
-          title="Tail Logs"
-          description="Real-time worker logs stream"
-        />
+      <div className="px-6 py-5 border-b border-kumo-line">
+        <h1 className="text-2xl font-semibold text-kumo-default">Tail Logs</h1>
+        <p className="text-sm text-kumo-strong mt-1">Real-time worker logs stream</p>
 
         <div className="mt-4 flex items-center gap-2">
           <Button
@@ -100,11 +94,7 @@ export function TailLogs() {
             size="sm"
             onClick={() => setIsPaused(!isPaused)}
           >
-            <HugeiconsIcon
-              icon={isPaused ? PlayIcon : PauseIcon}
-              className="size-4 mr-1.5"
-              strokeWidth={2}
-            />
+            {isPaused ? <PlayIcon size={16} className="mr-1.5" /> : <PauseIcon size={16} className="mr-1.5" />}
             {isPaused ? "Resume" : "Pause"}
           </Button>
 
@@ -114,15 +104,11 @@ export function TailLogs() {
             onClick={() => clearMutation.mutate()}
             disabled={clearMutation.isPending}
           >
-            <HugeiconsIcon
-              icon={Delete02Icon}
-              className="size-4 mr-1.5"
-              strokeWidth={2}
-            />
+            <TrashIcon size={16} className="mr-1.5" />
             Clear
           </Button>
 
-          <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="ml-auto flex items-center gap-2 text-xs text-kumo-strong">
             <span
               className={cn(
                 "size-2 rounded-full",
@@ -130,7 +116,7 @@ export function TailLogs() {
               )}
             />
             {isPaused ? "Paused" : "Streaming"}
-            <span className="text-muted-foreground/60">
+            <span className="text-kumo-inactive">
               ({logs.length} logs)
             </span>
           </div>
@@ -141,11 +127,10 @@ export function TailLogs() {
       <ScrollArea ref={scrollRef} className="flex-1">
         <div className="p-4 font-mono text-sm">
           {logs.length === 0 ? (
-            <div className="text-muted-foreground text-center py-20">
-              <HugeiconsIcon
-                icon={CommandLineIcon}
-                className="size-10 mx-auto opacity-30"
-                strokeWidth={1.5}
+            <div className="text-kumo-strong text-center py-20">
+              <TerminalIcon
+                size={40}
+                className="mx-auto opacity-30"
               />
               <p className="mt-4 text-sm">Waiting for logs...</p>
               <p className="text-xs mt-1 opacity-60">
@@ -159,11 +144,11 @@ export function TailLogs() {
                   <tr
                     key={log.id}
                     className={cn(
-                      "hover:bg-muted/50",
+                      "hover:bg-kumo-tint/50",
                       log.level === "error" && "bg-red-50 dark:bg-red-950/20"
                     )}
                   >
-                    <td className="py-1 pr-4 text-muted-foreground whitespace-nowrap align-top">
+                    <td className="py-1 pr-4 text-kumo-strong whitespace-nowrap align-top">
                       {formatTime(log.timestamp)}
                     </td>
                     <td className={cn(
@@ -172,10 +157,10 @@ export function TailLogs() {
                     )}>
                       {log.level.toUpperCase()}
                     </td>
-                    <td className="py-1 text-foreground break-all">
+                    <td className="py-1 text-kumo-default break-all">
                       {log.message}
                       {log.data !== undefined && (
-                        <span className="text-muted-foreground ml-2">
+                        <span className="text-kumo-strong ml-2">
                           {String(JSON.stringify(log.data))}
                         </span>
                       )}

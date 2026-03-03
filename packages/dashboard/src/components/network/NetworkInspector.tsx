@@ -1,20 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  Delete02Icon,
+  TrashIcon,
   PauseIcon,
   PlayIcon,
-  GlobalIcon,
-  ArrowRight01Icon,
-  Cancel01Icon,
-} from "@hugeicons/core-free-icons"
+  GlobeIcon,
+  ArrowRightIcon,
+  XIcon,
+} from "@phosphor-icons/react"
 import { requestsApi, getApiBase, type CapturedRequest } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { PageHeader } from "@/components/ui/page-header"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { cn } from "@cloudflare/kumo"
 
 const methodColors: Record<string, string> = {
   GET: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
@@ -31,7 +29,7 @@ const statusColors = (status: number): string => {
   if (status >= 400) return "text-orange-600"
   if (status >= 300) return "text-blue-600"
   if (status >= 200) return "text-green-600"
-  return "text-muted-foreground"
+  return "text-kumo-strong"
 }
 
 export function NetworkInspector() {
@@ -137,26 +135,26 @@ export function NetworkInspector() {
   const formatHeaders = (headers: Record<string, string>) => {
     return Object.entries(headers).map(([key, value]) => (
       <div key={key} className="flex gap-2 py-1">
-        <span className="text-muted-foreground font-medium">{key}:</span>
+        <span className="text-kumo-strong font-medium">{key}:</span>
         <span className="break-all">{value}</span>
       </div>
     ))
   }
 
   const formatBody = (body?: string) => {
-    if (!body) return <span className="text-muted-foreground">No body</span>
+    if (!body) return <span className="text-kumo-strong">No body</span>
 
     // Try to parse and format JSON
     try {
       const parsed = JSON.parse(body)
       return (
-        <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-64">
+        <pre className="text-xs bg-kumo-fill p-3 rounded-md overflow-auto max-h-64">
           {JSON.stringify(parsed, null, 2)}
         </pre>
       )
     } catch {
       return (
-        <pre className="text-xs bg-muted p-3 rounded-md overflow-auto max-h-64 whitespace-pre-wrap">
+        <pre className="text-xs bg-kumo-fill p-3 rounded-md overflow-auto max-h-64 whitespace-pre-wrap">
           {body}
         </pre>
       )
@@ -166,13 +164,9 @@ export function NetworkInspector() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <PageHeader
-          icon={GlobalIcon}
-          iconColor="text-blue-500"
-          title="Network Inspector"
-          description="Monitor HTTP requests to your worker"
-        />
+      <div className="px-6 py-5 border-b border-kumo-line">
+        <h1 className="text-2xl font-semibold text-kumo-default">Network Inspector</h1>
+        <p className="text-sm text-kumo-strong mt-1">Monitor HTTP requests to your worker</p>
 
         <div className="mt-4 flex items-center gap-2">
           <Button
@@ -180,11 +174,7 @@ export function NetworkInspector() {
             size="sm"
             onClick={() => setIsPaused(!isPaused)}
           >
-            <HugeiconsIcon
-              icon={isPaused ? PlayIcon : PauseIcon}
-              className="size-4 mr-1.5"
-              strokeWidth={2}
-            />
+            {isPaused ? <PlayIcon size={16} className="mr-1.5" /> : <PauseIcon size={16} className="mr-1.5" />}
             {isPaused ? "Resume" : "Pause"}
           </Button>
 
@@ -194,11 +184,7 @@ export function NetworkInspector() {
             onClick={() => clearMutation.mutate()}
             disabled={clearMutation.isPending}
           >
-            <HugeiconsIcon
-              icon={Delete02Icon}
-              className="size-4 mr-1.5"
-              strokeWidth={2}
-            />
+            <TrashIcon size={16} className="mr-1.5" />
             Clear
           </Button>
 
@@ -208,11 +194,11 @@ export function NetworkInspector() {
               placeholder="Filter requests..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="w-full max-w-xs px-3 py-1.5 text-sm border border-border rounded-md bg-background"
+              className="w-full max-w-xs px-3 py-1.5 text-sm border border-kumo-line rounded-md bg-kumo-base"
             />
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-kumo-strong">
             <span
               className={cn(
                 "size-2 rounded-full",
@@ -220,7 +206,7 @@ export function NetworkInspector() {
               )}
             />
             {isPaused ? "Paused" : "Recording"}
-            <span className="text-muted-foreground/60">
+            <span className="text-kumo-inactive">
               ({filteredRequests.length} requests)
             </span>
           </div>
@@ -231,21 +217,20 @@ export function NetworkInspector() {
       <div className="flex-1 flex min-h-0">
         {/* Request list */}
         <div className={cn(
-          "border-r border-border overflow-hidden flex flex-col",
+          "border-r border-kumo-line overflow-hidden flex flex-col",
           selectedRequest ? "w-1/2" : "w-full"
         )}>
           <ScrollArea ref={scrollRef} className="flex-1">
             <div className="text-sm">
               {isLoading ? (
-                <div className="text-muted-foreground text-center py-20">
+                <div className="text-kumo-strong text-center py-20">
                   Loading requests...
                 </div>
               ) : filteredRequests.length === 0 ? (
-                <div className="text-muted-foreground text-center py-20">
-                  <HugeiconsIcon
-                    icon={GlobalIcon}
-                    className="size-10 mx-auto opacity-30"
-                    strokeWidth={1.5}
+                <div className="text-kumo-strong text-center py-20">
+                  <GlobeIcon
+                    size={40}
+                    className="mx-auto opacity-30"
                   />
                   <p className="mt-4 text-sm">No requests captured yet</p>
                   <p className="text-xs mt-1 opacity-60">
@@ -254,8 +239,8 @@ export function NetworkInspector() {
                 </div>
               ) : (
                 <table className="w-full">
-                  <thead className="bg-muted/50 sticky top-0">
-                    <tr className="text-xs text-muted-foreground">
+                  <thead className="bg-kumo-tint/50 sticky top-0">
+                    <tr className="text-xs text-kumo-strong">
                       <th className="py-2 px-3 text-left font-medium">Time</th>
                       <th className="py-2 px-3 text-left font-medium">Method</th>
                       <th className="py-2 px-3 text-left font-medium">Path</th>
@@ -269,12 +254,12 @@ export function NetworkInspector() {
                         key={req.id}
                         onClick={() => setSelectedRequest(req)}
                         className={cn(
-                          "cursor-pointer hover:bg-muted/50 transition-colors",
-                          selectedRequest?.id === req.id && "bg-muted",
+                          "cursor-pointer hover:bg-kumo-tint/50 transition-colors",
+                          selectedRequest?.id === req.id && "bg-kumo-fill",
                           req.response?.status && req.response.status >= 400 && "bg-red-50 dark:bg-red-950/20"
                         )}
                       >
-                        <td className="py-2 px-3 text-muted-foreground whitespace-nowrap font-mono text-xs">
+                        <td className="py-2 px-3 text-kumo-strong whitespace-nowrap font-mono text-xs">
                           {formatTime(req.timestamp)}
                         </td>
                         <td className="py-2 px-3">
@@ -291,11 +276,11 @@ export function NetworkInspector() {
                               {req.response.status}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground text-xs">pending...</span>
+                            <span className="text-kumo-strong text-xs">pending...</span>
                           )}
                         </td>
-                        <td className="py-2 px-3 text-right text-muted-foreground font-mono text-xs">
-                          {req.response ? `${req.response.duration}ms` : "—"}
+                        <td className="py-2 px-3 text-right text-kumo-strong font-mono text-xs">
+                          {req.response ? `${req.response.duration}ms` : "\u2014"}
                         </td>
                       </tr>
                     ))}
@@ -309,7 +294,7 @@ export function NetworkInspector() {
         {/* Request details */}
         {selectedRequest && (
           <div className="w-1/2 flex flex-col min-h-0">
-            <div className="p-3 border-b border-border flex items-center justify-between bg-muted/30">
+            <div className="p-3 border-b border-kumo-line flex items-center justify-between bg-kumo-tint/30">
               <div className="flex items-center gap-2">
                 <Badge className={cn("text-xs font-mono", methodColors[selectedRequest.method] || methodColors.GET)}>
                   {selectedRequest.method}
@@ -317,7 +302,7 @@ export function NetworkInspector() {
                 <span className="font-mono text-sm truncate max-w-[250px]">{selectedRequest.path}</span>
                 {selectedRequest.response && (
                   <>
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="size-4 text-muted-foreground" />
+                    <ArrowRightIcon size={16} className="text-kumo-strong" />
                     <span className={cn("font-mono text-sm font-medium", statusColors(selectedRequest.response.status))}>
                       {selectedRequest.response.status} {selectedRequest.response.statusText}
                     </span>
@@ -330,7 +315,7 @@ export function NetworkInspector() {
                 className="size-7"
                 onClick={() => setSelectedRequest(null)}
               >
-                <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
+                <XIcon size={16} />
               </Button>
             </div>
             <ScrollArea className="flex-1">
@@ -338,18 +323,18 @@ export function NetworkInspector() {
                 {/* General Info */}
                 <div>
                   <h4 className="font-medium mb-2">General</h4>
-                  <div className="bg-muted/30 rounded-md p-3 space-y-1 text-xs">
+                  <div className="bg-kumo-tint/30 rounded-md p-3 space-y-1 text-xs">
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground font-medium">URL:</span>
+                      <span className="text-kumo-strong font-medium">URL:</span>
                       <span className="break-all font-mono">{selectedRequest.url}</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground font-medium">Time:</span>
+                      <span className="text-kumo-strong font-medium">Time:</span>
                       <span>{new Date(selectedRequest.timestamp).toLocaleString()}</span>
                     </div>
                     {selectedRequest.response && (
                       <div className="flex gap-2">
-                        <span className="text-muted-foreground font-medium">Duration:</span>
+                        <span className="text-kumo-strong font-medium">Duration:</span>
                         <span>{selectedRequest.response.duration}ms</span>
                       </div>
                     )}
@@ -359,7 +344,7 @@ export function NetworkInspector() {
                 {/* Request Headers */}
                 <div>
                   <h4 className="font-medium mb-2">Request Headers</h4>
-                  <div className="bg-muted/30 rounded-md p-3 text-xs">
+                  <div className="bg-kumo-tint/30 rounded-md p-3 text-xs">
                     {formatHeaders(selectedRequest.headers)}
                   </div>
                 </div>
@@ -377,7 +362,7 @@ export function NetworkInspector() {
                     {/* Response Headers */}
                     <div>
                       <h4 className="font-medium mb-2">Response Headers</h4>
-                      <div className="bg-muted/30 rounded-md p-3 text-xs">
+                      <div className="bg-kumo-tint/30 rounded-md p-3 text-xs">
                         {formatHeaders(selectedRequest.response.headers)}
                       </div>
                     </div>

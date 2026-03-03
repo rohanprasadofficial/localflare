@@ -1,21 +1,16 @@
 import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  TaskDone01Icon,
-  Sent02Icon,
-  InformationCircleIcon,
-  Settings02Icon,
-  CheckmarkCircle02Icon,
-  AlertCircleIcon,
-} from "@hugeicons/core-free-icons"
+  CheckCircleIcon,
+  PaperPlaneRightIcon,
+  InfoIcon,
+  GearIcon,
+  WarningIcon,
+} from "@phosphor-icons/react"
 import { queuesApi } from "@/lib/api"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { PageHeader } from "@/components/ui/page-header"
-import { StatsCard, StatsCardGroup } from "@/components/ui/stats-card"
 import { DataTableLoading } from "@/components/ui/data-table"
-import { EmptyState } from "@/components/ui/empty-state"
-import { cn } from "@/lib/utils"
+import { cn } from "@cloudflare/kumo"
 
 export function QueuesExplorer() {
   const [selectedQueue, setSelectedQueue] = useState<string | null>(null)
@@ -69,18 +64,15 @@ export function QueuesExplorer() {
   if (!producers.length) {
     return (
       <div className="p-6">
-        <PageHeader
-          icon={TaskDone01Icon}
-          iconColor="text-queues"
-          title="Queues"
-          description="Cloudflare Queues for async message processing"
-        />
-        <EmptyState
-          icon={TaskDone01Icon}
-          title="No Queues configured"
-          description="Add a Queue binding to your wrangler.toml to get started"
-          className="mt-8"
-        />
+        <div className="px-6 py-5 border-b border-kumo-line">
+          <h1 className="text-2xl font-semibold text-kumo-default">Queues</h1>
+          <p className="text-sm text-kumo-strong mt-1">Cloudflare Queues for async message processing</p>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <CheckCircleIcon size={32} className="text-kumo-subtle mb-3" />
+          <p className="text-sm text-kumo-default font-medium">No Queues configured</p>
+          <p className="text-xs text-kumo-strong mt-1">Add a Queue binding to your wrangler.toml to get started</p>
+        </div>
       </div>
     )
   }
@@ -88,38 +80,28 @@ export function QueuesExplorer() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <PageHeader
-          icon={TaskDone01Icon}
-          iconColor="text-queues"
-          title="Queues"
-          description="Cloudflare Queues for async message processing"
-        />
+      <div className="px-6 py-5 border-b border-kumo-line">
+        <h1 className="text-2xl font-semibold text-kumo-default">Queues</h1>
+        <p className="text-sm text-kumo-strong mt-1">Cloudflare Queues for async message processing</p>
 
         {/* Stats */}
-        <StatsCardGroup className="mt-6">
-          <StatsCard
-            icon={Sent02Icon}
-            iconColor="text-queues"
-            label="Producers"
-            value={producers.length}
-            description="Send messages"
-          />
-          <StatsCard
-            icon={Settings02Icon}
-            iconColor="text-muted-foreground"
-            label="Consumers"
-            value={consumers.length}
-            description="Process messages"
-          />
-        </StatsCardGroup>
+        <div className="grid grid-cols-2 gap-px rounded-lg border border-kumo-line bg-kumo-line overflow-hidden mt-5 max-w-400px">
+          <div className="bg-kumo-base px-4 py-3">
+            <p className="text-xs text-kumo-strong">Producers</p>
+            <p className="text-xl font-semibold text-kumo-default mt-0.5 tabular-nums">{producers.length}</p>
+          </div>
+          <div className="bg-kumo-base px-4 py-3">
+            <p className="text-xs text-kumo-strong">Consumers</p>
+            <p className="text-xl font-semibold text-kumo-default mt-0.5 tabular-nums">{consumers.length}</p>
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 flex min-h-0">
         {/* Queue List */}
-        <div className="w-64 border-r border-border flex flex-col bg-muted/30">
-          <div className="p-3 border-b border-border">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <div className="w-64 border-r border-kumo-line flex flex-col bg-kumo-tint/30">
+          <div className="p-3 border-b border-kumo-line">
+            <span className="text-[10px] font-semibold text-kumo-strong uppercase tracking-wider">
               Producers
             </span>
           </div>
@@ -132,14 +114,13 @@ export function QueuesExplorer() {
                   className={cn(
                     "w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors",
                     selectedQueue === producer.binding
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-kumo-tint text-kumo-default font-medium"
+                      : "text-kumo-strong hover:bg-kumo-tint hover:text-kumo-default"
                   )}
                 >
-                  <HugeiconsIcon
-                    icon={Sent02Icon}
-                    className={cn("size-4", selectedQueue === producer.binding && "text-queues")}
-                    strokeWidth={2}
+                  <PaperPlaneRightIcon
+                    size={16}
+                    className={cn(selectedQueue === producer.binding && "text-queues")}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="truncate font-medium">{producer.binding}</div>
@@ -151,8 +132,8 @@ export function QueuesExplorer() {
 
             {consumers.length > 0 && (
               <>
-                <div className="p-3 border-t border-b border-border mt-2">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="p-3 border-t border-b border-kumo-line mt-2">
+                  <span className="text-[10px] font-semibold text-kumo-strong uppercase tracking-wider">
                     Consumers
                   </span>
                 </div>
@@ -160,10 +141,10 @@ export function QueuesExplorer() {
                   {consumers.map((consumer) => (
                     <div
                       key={consumer.queue}
-                      className="px-3 py-2 rounded-md text-sm text-muted-foreground"
+                      className="px-3 py-2 rounded-md text-sm text-kumo-strong"
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <HugeiconsIcon icon={Settings02Icon} className="size-4" strokeWidth={2} />
+                        <GearIcon size={16} />
                         <span className="truncate font-medium">{consumer.queue}</span>
                       </div>
                       <div className="ml-6 text-[10px] space-y-0.5 opacity-70">
@@ -185,19 +166,19 @@ export function QueuesExplorer() {
             <div className="flex-1 overflow-auto p-6">
               <div className="max-w-2xl space-y-6">
                 {/* Send Message Form */}
-                <div className="border border-border rounded-lg p-4">
+                <div className="border border-kumo-line rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <HugeiconsIcon icon={Sent02Icon} className="size-5 text-queues" strokeWidth={2} />
+                    <PaperPlaneRightIcon size={20} className="text-queues" />
                     <h3 className="text-sm font-semibold">Send Message to {selectedQueue}</h3>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Message (JSON)</label>
+                      <label className="text-xs text-kumo-strong mb-1 block">Message (JSON)</label>
                       <textarea
                         value={messageInput}
                         onChange={(e) => setMessageInput(e.target.value)}
-                        className="w-full h-32 px-3 py-2 rounded-md bg-muted border border-border font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-queues/50"
+                        className="w-full h-32 px-3 py-2 rounded-md bg-kumo-fill border border-kumo-line font-mono text-xs resize-none focus:outline-none focus:ring-2 focus:ring-queues/50"
                         placeholder='{"type": "task", "data": "hello"}'
                       />
                     </div>
@@ -215,7 +196,7 @@ export function QueuesExplorer() {
                           </>
                         ) : (
                           <>
-                            <HugeiconsIcon icon={Sent02Icon} className="size-4" strokeWidth={2} />
+                            <PaperPlaneRightIcon size={16} />
                             Send Message
                           </>
                         )}
@@ -226,11 +207,11 @@ export function QueuesExplorer() {
                           "flex items-center gap-2 text-sm",
                           sendStatus.type === 'success' ? "text-green-600" : "text-red-600"
                         )}>
-                          <HugeiconsIcon
-                            icon={sendStatus.type === 'success' ? CheckmarkCircle02Icon : AlertCircleIcon}
-                            className="size-4"
-                            strokeWidth={2}
-                          />
+                          {sendStatus.type === 'success' ? (
+                            <CheckCircleIcon size={16} />
+                          ) : (
+                            <WarningIcon size={16} />
+                          )}
                           <span>{sendStatus.message}</span>
                         </div>
                       )}
@@ -241,7 +222,7 @@ export function QueuesExplorer() {
                 {/* How it works info */}
                 <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
                   <div className="flex items-start gap-3">
-                    <HugeiconsIcon icon={InformationCircleIcon} className="size-5 text-blue-500 mt-0.5" strokeWidth={2} />
+                    <InfoIcon size={20} className="text-blue-500 mt-0.5" />
                     <div className="space-y-2 text-sm">
                       <p className="font-medium text-blue-600">How Cloudflare Queues Work</p>
                       <ol className="list-decimal list-inside space-y-1 text-blue-600/80">
@@ -256,43 +237,43 @@ export function QueuesExplorer() {
 
                 {/* Consumer Config */}
                 {matchingConsumer && (
-                  <div className="border border-border rounded-lg p-4">
+                  <div className="border border-kumo-line rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <HugeiconsIcon icon={Settings02Icon} className="size-5 text-muted-foreground" strokeWidth={2} />
+                      <GearIcon size={20} className="text-kumo-strong" />
                       <h3 className="text-sm font-semibold">Consumer Configuration</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-muted rounded-md">
-                        <div className="text-xs text-muted-foreground">Max Batch Size</div>
+                      <div className="p-3 bg-kumo-fill rounded-md">
+                        <div className="text-xs text-kumo-strong">Max Batch Size</div>
                         <div className="font-mono text-sm">{matchingConsumer.max_batch_size} messages</div>
                       </div>
-                      <div className="p-3 bg-muted rounded-md">
-                        <div className="text-xs text-muted-foreground">Max Batch Timeout</div>
+                      <div className="p-3 bg-kumo-fill rounded-md">
+                        <div className="text-xs text-kumo-strong">Max Batch Timeout</div>
                         <div className="font-mono text-sm">{matchingConsumer.max_batch_timeout} seconds</div>
                       </div>
-                      <div className="p-3 bg-muted rounded-md">
-                        <div className="text-xs text-muted-foreground">Max Retries</div>
+                      <div className="p-3 bg-kumo-fill rounded-md">
+                        <div className="text-xs text-kumo-strong">Max Retries</div>
                         <div className="font-mono text-sm">{matchingConsumer.max_retries}</div>
                       </div>
-                      <div className="p-3 bg-muted rounded-md">
-                        <div className="text-xs text-muted-foreground">Dead Letter Queue</div>
+                      <div className="p-3 bg-kumo-fill rounded-md">
+                        <div className="text-xs text-kumo-strong">Dead Letter Queue</div>
                         <div className="font-mono text-sm">{matchingConsumer.dead_letter_queue ?? "None"}</div>
                       </div>
                     </div>
-                    <p className="mt-3 text-xs text-muted-foreground">
+                    <p className="mt-3 text-xs text-kumo-strong">
                       Consumer waits up to {matchingConsumer.max_batch_timeout}s or {matchingConsumer.max_batch_size} messages before processing a batch.
                     </p>
                   </div>
                 )}
 
                 {/* Producer info */}
-                <div className="border border-border rounded-lg p-4">
+                <div className="border border-kumo-line rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <HugeiconsIcon icon={Sent02Icon} className="size-5 text-queues" strokeWidth={2} />
+                    <PaperPlaneRightIcon size={20} className="text-queues" />
                     <h3 className="text-sm font-semibold">Producer: {selectedQueue}</h3>
                   </div>
-                  <div className="p-3 bg-muted rounded-md">
-                    <div className="text-xs text-muted-foreground">Queue Name</div>
+                  <div className="p-3 bg-kumo-fill rounded-md">
+                    <div className="text-xs text-kumo-strong">Queue Name</div>
                     <div className="font-mono text-sm">{selectedProducer?.queue}</div>
                   </div>
                 </div>
@@ -301,14 +282,14 @@ export function QueuesExplorer() {
           ) : (
             <div className="flex-1 flex items-center justify-center p-6">
               <div className="text-center max-w-md">
-                <HugeiconsIcon icon={TaskDone01Icon} className="size-12 text-muted-foreground/50 mx-auto mb-4" strokeWidth={1.5} />
+                <CheckCircleIcon size={48} className="text-kumo-subtle mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Select a Queue</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-kumo-strong mb-4">
                   Choose a queue from the sidebar to send messages and view configuration.
                 </p>
-                <div className="p-4 rounded-lg bg-muted/50 text-left text-sm">
+                <div className="p-4 rounded-lg bg-kumo-tint/50 text-left text-sm">
                   <p className="font-medium mb-2">With Localflare you can:</p>
-                  <ul className="space-y-1 text-muted-foreground text-xs">
+                  <ul className="space-y-1 text-kumo-strong text-xs">
                     <li>• Send messages to queues directly from the dashboard</li>
                     <li>• View queue configuration from wrangler.toml</li>
                     <li>• Display producer and consumer settings</li>

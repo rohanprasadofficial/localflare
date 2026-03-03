@@ -1,12 +1,8 @@
 import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Layers01Icon, PlayIcon, PlusSignIcon, RotateClockwiseIcon } from "@hugeicons/core-free-icons"
+import { StackIcon, PlayIcon, PlusIcon, ArrowsClockwiseIcon } from "@phosphor-icons/react"
 import { doApi, bindingsApi, type DurableObject } from "@/lib/api"
-import { PageHeader } from "@/components/ui/page-header"
-import { StatsCard, StatsCardGroup } from "@/components/ui/stats-card"
 import { DataTable, DataTableLoading, type Column } from "@/components/ui/data-table"
-import { EmptyState } from "@/components/ui/empty-state"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -39,7 +35,6 @@ export function DOExplorer() {
   const [response, setResponse] = useState<string | null>(null)
   const [responseStatus, setResponseStatus] = useState<number | null>(null)
 
-  // Create instance dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [newInstanceName, setNewInstanceName] = useState("")
 
@@ -48,15 +43,12 @@ export function DOExplorer() {
     queryFn: bindingsApi.getAll,
   })
 
-  // Auto-load existing instances from storage
   const { data: existingInstances, isLoading: isLoadingInstances, refetch: refetchInstances } = useQuery({
     queryKey: ["do-instances"],
     queryFn: doApi.getInstances,
   })
 
   const isLoading = isLoadingBindings || isLoadingInstances
-
-  // Use instances directly from API (names are now included from server)
   const instances: DOInstance[] = existingInstances?.instances ?? []
 
   const createInstanceMutation = useMutation({
@@ -65,9 +57,7 @@ export function DOExplorer() {
       return { binding, id: result.id }
     },
     onSuccess: (data) => {
-      // Refetch to get updated instances list
       refetchInstances()
-      // Select the new instance
       const doBindings = bindings?.bindings.durableObjects ?? []
       setSelectedInstance({
         binding: data.binding,
@@ -80,37 +70,15 @@ export function DOExplorer() {
   })
 
   const fetchMutation = useMutation({
-    mutationFn: async ({
-      binding,
-      id,
-      path,
-      method,
-      body,
-    }: {
-      binding: string
-      id: string
-      path: string
-      method: string
-      body?: string
-    }) => {
-      const options: RequestInit = {
-        method,
-      }
-      if (body && method !== "GET" && method !== "HEAD") {
-        options.body = body
-      }
+    mutationFn: async ({ binding, id, path, method, body }: { binding: string; id: string; path: string; method: string; body?: string }) => {
+      const options: RequestInit = { method }
+      if (body && method !== "GET" && method !== "HEAD") options.body = body
       const response = await doApi.fetch(binding, id, path, options)
       const text = await response.text()
       return { status: response.status, body: text }
     },
-    onSuccess: (data) => {
-      setResponse(data.body)
-      setResponseStatus(data.status)
-    },
-    onError: (error) => {
-      setResponse(String(error))
-      setResponseStatus(500)
-    },
+    onSuccess: (data) => { setResponse(data.body); setResponseStatus(data.status) },
+    onError: (error) => { setResponse(String(error)); setResponseStatus(500) },
   })
 
   const doColumns: Column<Record<string, unknown>>[] = [
@@ -119,7 +87,7 @@ export function DOExplorer() {
       header: "Binding",
       render: (value) => (
         <div className="flex items-center gap-2">
-          <HugeiconsIcon icon={Layers01Icon} className="size-4 text-do" strokeWidth={2} />
+          <StackIcon size={16} className="text-do" />
           <span className="font-medium text-sm">{String(value)}</span>
         </div>
       ),
@@ -134,9 +102,9 @@ export function DOExplorer() {
       header: "Script",
       render: (value) =>
         value ? (
-          <span className="text-xs text-muted-foreground">{String(value)}</span>
+          <span className="text-xs text-kumo-strong">{String(value)}</span>
         ) : (
-          <span className="text-xs text-muted-foreground italic">Local</span>
+          <span className="text-xs text-kumo-strong italic">Local</span>
         ),
     },
   ]
@@ -156,75 +124,58 @@ export function DOExplorer() {
       key: "id",
       header: "ID",
       render: (value) => (
-        <span className="font-mono text-xs text-muted-foreground">{String(value).slice(0, 16)}...</span>
+        <span className="font-mono text-xs text-kumo-strong">{String(value).slice(0, 16)}...</span>
       ),
     },
   ]
 
   if (isLoading) {
-    return (
-      <div className="p-6">
-        <DataTableLoading />
-      </div>
-    )
+    return <div className="p-8"><DataTableLoading /></div>
   }
 
   const durableObjects = (bindings?.bindings.durableObjects ?? []) as unknown as DurableObject[]
 
   if (!durableObjects.length) {
     return (
-      <div className="p-6">
-        <PageHeader
-          icon={Layers01Icon}
-          iconColor="text-do"
-          title="Durable Objects"
-          description="Manage your Durable Objects classes"
-        />
-        <EmptyState
-          icon={Layers01Icon}
-          title="No Durable Objects configured"
-          description="Add a Durable Object binding to your wrangler.toml to get started"
-          className="mt-8"
-        />
+      <div className="p-8 max-w-3xl">
+        <h1 className="text-2xl font-semibold text-kumo-default">Durable Objects</h1>
+        <p className="text-sm text-kumo-strong mt-1">Manage your Durable Objects classes</p>
+        <div className="mt-8 rounded-lg border border-kumo-line p-8 text-center">
+          <StackIcon size={32} className="text-kumo-subtle mx-auto mb-3" />
+          <p className="text-sm text-kumo-default font-medium">No Durable Objects configured</p>
+          <p className="text-xs text-kumo-strong mt-1">Add a Durable Object binding to your wrangler.toml to get started</p>
+        </div>
       </div>
     )
   }
 
   const handleCreateInstance = () => {
     if (!selectedBinding) return
-    createInstanceMutation.mutate({
-      binding: selectedBinding,
-      name: newInstanceName || undefined,
-    })
+    createInstanceMutation.mutate({ binding: selectedBinding, name: newInstanceName || undefined })
   }
 
   const handleSendRequest = () => {
     if (!selectedInstance) return
-    fetchMutation.mutate({
-      binding: selectedInstance.binding,
-      id: selectedInstance.id,
-      path: requestPath,
-      method: requestMethod,
-      body: requestBody,
-    })
+    fetchMutation.mutate({ binding: selectedInstance.binding, id: selectedInstance.id, path: requestPath, method: requestMethod, body: requestBody })
   }
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-border">
-        <PageHeader
-          icon={Layers01Icon}
-          iconColor="text-do"
-          title="Durable Objects"
-          description="Manage and interact with your Durable Objects"
-        />
+      <div className="px-6 py-5 border-b border-kumo-line">
+        <h1 className="text-2xl font-semibold text-kumo-default">Durable Objects</h1>
+        <p className="text-sm text-kumo-strong mt-1">Manage and interact with your Durable Objects</p>
 
-        {/* Stats */}
-        <StatsCardGroup className="mt-6">
-          <StatsCard icon={Layers01Icon} iconColor="text-do" label="DO Classes" value={durableObjects.length} />
-          <StatsCard icon={Layers01Icon} iconColor="text-blue-500" label="Active Instances" value={instances.length} />
-        </StatsCardGroup>
+        <div className="grid grid-cols-2 gap-px rounded-lg border border-kumo-line bg-kumo-line overflow-hidden mt-5 max-w-sm">
+          <div className="bg-kumo-base px-4 py-3">
+            <p className="text-xs text-kumo-strong">DO Classes</p>
+            <p className="text-xl font-semibold text-kumo-default mt-0.5 tabular-nums">{durableObjects.length}</p>
+          </div>
+          <div className="bg-kumo-base px-4 py-3">
+            <p className="text-xs text-kumo-strong">Active Instances</p>
+            <p className="text-xl font-semibold text-kumo-default mt-0.5 tabular-nums">{instances.length}</p>
+          </div>
+        </div>
       </div>
 
       {/* Content */}
@@ -235,14 +186,14 @@ export function DOExplorer() {
           <DataTable
             columns={doColumns}
             data={durableObjects as unknown as Record<string, unknown>[]}
-            emptyIcon={Layers01Icon}
+            emptyIcon={StackIcon}
             emptyTitle="No Durable Objects"
             emptyDescription="Configure Durable Objects in your wrangler.toml"
           />
         </div>
 
-        {/* Create Instance Section */}
-        <div className="border border-border rounded-lg p-4">
+        {/* Instances Section */}
+        <div className="border border-kumo-line rounded-lg p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium">DO Instances (from storage)</h3>
             <div className="flex gap-2">
@@ -252,12 +203,12 @@ export function DOExplorer() {
                 onClick={() => refetchInstances()}
                 disabled={isLoadingInstances}
               >
-                <HugeiconsIcon icon={RotateClockwiseIcon} className={`size-4 ${isLoadingInstances ? 'animate-spin' : ''}`} />
+                <ArrowsClockwiseIcon size={16} className={isLoadingInstances ? 'animate-spin' : ''} />
               </Button>
               <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
-                    <HugeiconsIcon icon={PlusSignIcon} className="size-4 mr-2" />
+                    <PlusIcon size={16} className="mr-2" />
                     Create Instance
                   </Button>
                 </DialogTrigger>
@@ -291,22 +242,18 @@ export function DOExplorer() {
                       value={newInstanceName}
                       onChange={(e) => setNewInstanceName(e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-kumo-strong">
                       Same name always returns the same DO instance. Leave empty to generate a unique ID.
                     </p>
                   </div>
                   {createInstanceMutation.isError && (
                     <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                      <p className="text-sm text-red-500">
-                        {String(createInstanceMutation.error)}
-                      </p>
+                      <p className="text-sm text-red-500">{String(createInstanceMutation.error)}</p>
                     </div>
                   )}
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                    Cancel
-                  </Button>
+                  <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleCreateInstance} disabled={!selectedBinding || createInstanceMutation.isPending}>
                     {createInstanceMutation.isPending ? "Creating..." : "Create"}
                   </Button>
@@ -316,19 +263,18 @@ export function DOExplorer() {
             </div>
           </div>
 
-
           {instances.length > 0 ? (
             <DataTable
               columns={instanceColumns}
               data={instances}
-              emptyIcon={Layers01Icon}
+              emptyIcon={StackIcon}
               emptyTitle="No instances"
               emptyDescription="Create a DO instance to interact with it"
               onRowClick={(row) => setSelectedInstance(row)}
               rowKey={(row) => `${row.binding}-${row.id}`}
             />
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">
+            <p className="text-sm text-kumo-strong text-center py-4">
               No instances found. Click "Create Instance" to get started or use your app to create DO instances.
             </p>
           )}
@@ -336,12 +282,11 @@ export function DOExplorer() {
 
         {/* Fetch Request Section */}
         {selectedInstance && (
-          <div className="border border-border rounded-lg p-4">
+          <div className="border border-kumo-line rounded-lg p-4">
             <h3 className="text-sm font-medium mb-4">
               Send Request to: <span className="text-do">{selectedInstance.id.slice(0, 16)}...</span>
             </h3>
             <div className="space-y-4">
-              {/* Custom Request */}
               <div className="flex gap-2">
                 <Select value={requestMethod} onValueChange={setRequestMethod}>
                   <SelectTrigger className="w-24">
@@ -355,14 +300,9 @@ export function DOExplorer() {
                     <SelectItem value="DELETE">DELETE</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input
-                  placeholder="/path"
-                  value={requestPath}
-                  onChange={(e) => setRequestPath(e.target.value)}
-                  className="flex-1"
-                />
+                <Input placeholder="/path" value={requestPath} onChange={(e) => setRequestPath(e.target.value)} className="flex-1" />
                 <Button onClick={handleSendRequest} disabled={fetchMutation.isPending}>
-                  <HugeiconsIcon icon={PlayIcon} className="size-4 mr-2" />
+                  <PlayIcon size={16} className="mr-2" />
                   {fetchMutation.isPending ? "Sending..." : "Send"}
                 </Button>
               </div>
@@ -384,17 +324,15 @@ export function DOExplorer() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Label>Response</Label>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded ${
-                        responseStatus && responseStatus >= 200 && responseStatus < 300
-                          ? "bg-green-500/20 text-green-500"
-                          : "bg-red-500/20 text-red-500"
-                      }`}
-                    >
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      responseStatus && responseStatus >= 200 && responseStatus < 300
+                        ? "bg-green-500/20 text-green-500"
+                        : "bg-red-500/20 text-red-500"
+                    }`}>
                       {responseStatus}
                     </span>
                   </div>
-                  <pre className="bg-muted p-3 rounded-lg text-sm font-mono overflow-auto max-h-64 whitespace-pre-wrap">
+                  <pre className="bg-kumo-fill p-3 rounded-lg text-sm font-mono overflow-auto max-h-64 whitespace-pre-wrap">
                     {response}
                   </pre>
                 </div>
