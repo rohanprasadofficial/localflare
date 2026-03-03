@@ -6,8 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { HugeiconsIcon } from '@hugeicons/react'
-import { Add01Icon, Edit02Icon, Key01Icon } from '@hugeicons/core-free-icons'
+import { PlusIcon, PencilSimpleIcon, KeyIcon } from '@phosphor-icons/react'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
+import { cn } from '@cloudflare/kumo'
 import type { D1Row, D1CellValue, D1TableSchema, D1Column } from './types'
 
 // ============================================================================
@@ -123,17 +122,17 @@ function FormField({
           htmlFor={column.name}
           className={cn(
             "text-xs font-medium flex items-center gap-1.5",
-            isPrimaryKey && "text-primary"
+            isPrimaryKey && "text-kumo-brand"
           )}
         >
           {isPrimaryKey && (
-            <HugeiconsIcon icon={Key01Icon} className="size-3" strokeWidth={2} />
+            <KeyIcon size={12} />
           )}
           {column.name}
-          {isRequired && <span className="text-destructive">*</span>}
+          {isRequired && <span className="text-kumo-danger">*</span>}
         </Label>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground uppercase">
+          <span className="text-[10px] text-kumo-strong uppercase">
             {column.type}
           </span>
           {!isRequired && (
@@ -144,8 +143,8 @@ function FormField({
                 "text-[10px] px-1.5 py-0.5 rounded",
                 "transition-colors",
                 value === null
-                  ? "bg-amber-500/20 text-amber-500"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  ? "bg-yellow-500/20 text-yellow-500"
+                  : "bg-kumo-fill text-kumo-strong hover:bg-kumo-fill"
               )}
             >
               NULL
@@ -162,9 +161,9 @@ function FormField({
             checked={!!value}
             onChange={handleChange}
             disabled={inputDisabled}
-            className="rounded border-border"
+            className="rounded border-kumo-line"
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-kumo-strong">
             {value ? 'true (1)' : 'false (0)'}
           </span>
         </div>
@@ -177,13 +176,13 @@ function FormField({
           placeholder={value === null ? 'NULL' : isAutoIncrement ? 'Auto-generated' : ''}
           rows={2}
           className={cn(
-            "w-full px-3 py-2 rounded-md border border-input bg-background",
+            "w-full px-3 py-2 rounded-md border border-kumo-line bg-kumo-base",
             "text-sm font-mono",
-            "placeholder:text-muted-foreground/50",
-            "focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent",
+            "placeholder:text-kumo-subtle",
+            "focus:outline-none focus:ring-2 focus:ring-kumo-ring focus:border-transparent",
             "disabled:opacity-50 disabled:cursor-not-allowed",
-            value === null && "italic text-muted-foreground",
-            error && "border-destructive focus:ring-destructive"
+            value === null && "italic text-kumo-strong",
+            error && "border-kumo-danger focus:ring-kumo-danger"
           )}
         />
       ) : (
@@ -197,17 +196,17 @@ function FormField({
           className={cn(
             "font-mono text-sm",
             value === null && "italic",
-            error && "border-destructive focus:ring-destructive"
+            error && "border-kumo-danger focus:ring-kumo-danger"
           )}
         />
       )}
-      
+
       {error && (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-kumo-danger">{error}</p>
       )}
       
       {column.dflt_value !== null && (
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[10px] text-kumo-strong">
           Default: {String(column.dflt_value)}
         </p>
       )}
@@ -394,11 +393,7 @@ export function RowEditorDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <HugeiconsIcon 
-              icon={isEditing ? Edit02Icon : Add01Icon} 
-              className="size-5" 
-              strokeWidth={2} 
-            />
+            {isEditing ? <PencilSimpleIcon size={20} /> : <PlusIcon size={20} />}
             {isEditing ? 'Edit Row' : 'Add Row'}
           </DialogTitle>
           <DialogDescription>

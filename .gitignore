@@ -34,3 +34,6 @@ pnpm-debug.log*
 
 # Test coverage
 coverage/
+
+
+.claude

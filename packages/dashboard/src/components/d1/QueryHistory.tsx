@@ -9,17 +9,16 @@
  */
 
 import { useMemo } from 'react'
-import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Clock01Icon,
-  Delete02Icon,
-  Tick01Icon,
-  Cancel01Icon,
-  Database02Icon,
-} from '@hugeicons/core-free-icons'
+  ClockIcon,
+  TrashIcon,
+  CheckIcon,
+  XIcon,
+  DatabaseIcon,
+} from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
+import { cn } from '@cloudflare/kumo'
 import type { QueryHistoryEntry } from './types'
 
 // ============================================================================
@@ -97,7 +96,7 @@ function getQueryTypeColor(sql: string): string {
   if (upper.startsWith('DROP')) return 'bg-red-500/10 text-red-500'
   if (upper.startsWith('ALTER')) return 'bg-orange-500/10 text-orange-500'
   
-  return 'bg-muted text-muted-foreground'
+  return 'bg-kumo-fill text-kumo-strong'
 }
 
 /**
@@ -127,8 +126,8 @@ function HistoryEntryItem({ entry, onSelect }: HistoryEntryProps) {
       onClick={onSelect}
       className={cn(
         "w-full text-left px-3 py-2.5",
-        "hover:bg-muted/50 transition-colors",
-        "border-b border-border last:border-b-0",
+        "hover:bg-kumo-tint/50 transition-colors",
+        "border-b border-kumo-line last:border-b-0",
         "group"
       )}
     >
@@ -136,16 +135,13 @@ function HistoryEntryItem({ entry, onSelect }: HistoryEntryProps) {
         {/* Status indicator */}
         <div className={cn(
           "size-4 rounded-full flex items-center justify-center shrink-0 mt-0.5",
-          entry.success ? "bg-emerald-500/10" : "bg-destructive/10"
+          entry.success ? "bg-emerald-500/10" : "bg-kumo-danger/10"
         )}>
-          <HugeiconsIcon 
-            icon={entry.success ? Tick01Icon : Cancel01Icon} 
-            className={cn(
-              "size-2.5",
-              entry.success ? "text-emerald-500" : "text-destructive"
-            )} 
-            strokeWidth={2} 
-          />
+          {entry.success ? (
+            <CheckIcon size={10} className="text-emerald-500" />
+          ) : (
+            <XIcon size={10} className="text-kumo-danger" />
+          )}
         </div>
         
         {/* Query content */}
@@ -157,25 +153,25 @@ function HistoryEntryItem({ entry, onSelect }: HistoryEntryProps) {
             )}>
               {queryType}
             </span>
-            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5 shrink-0">
-              <HugeiconsIcon icon={Database02Icon} className="size-2.5" />
+            <span className="text-[10px] text-kumo-strong flex items-center gap-0.5 shrink-0">
+              <DatabaseIcon size={10} />
               {entry.database}
             </span>
           </div>
           
-          <p className="text-[11px] font-mono text-foreground/90 leading-relaxed break-all line-clamp-2">
+          <p className="text-[11px] font-mono text-kumo-default leading-relaxed break-all line-clamp-2">
             {truncateSQL(entry.sql, 80)}
           </p>
           
           {entry.error && (
-            <p className="text-[10px] text-destructive mt-1 line-clamp-1 break-all">
+            <p className="text-[10px] text-kumo-danger mt-1 line-clamp-1 break-all">
               {entry.error}
             </p>
           )}
           
-          <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground flex-wrap">
+          <div className="flex items-center gap-2 mt-1.5 text-[10px] text-kumo-strong flex-wrap">
             <span className="flex items-center gap-0.5 shrink-0">
-              <HugeiconsIcon icon={Clock01Icon} className="size-2.5" />
+              <ClockIcon size={10} />
               {formatRelativeTime(entry.timestamp)}
             </span>
             {entry.duration !== undefined && (
@@ -211,16 +207,12 @@ export function QueryHistory({
   if (displayEntries.length === 0) {
     return (
       <div className={cn(
-        "border border-border rounded-lg p-6 text-center",
+        "border border-kumo-line rounded-lg p-6 text-center",
         className
       )}>
-        <HugeiconsIcon 
-          icon={Clock01Icon} 
-          className="size-8 text-muted-foreground/30 mx-auto mb-2" 
-          strokeWidth={1.5} 
-        />
-        <p className="text-sm text-muted-foreground">No query history</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
+        <ClockIcon size={32} className="text-kumo-inactive mx-auto mb-2" />
+        <p className="text-sm text-kumo-strong">No query history</p>
+        <p className="text-xs text-kumo-inactive mt-1">
           Executed queries will appear here
         </p>
       </div>
@@ -228,17 +220,13 @@ export function QueryHistory({
   }
   
   return (
-    <div className={cn("border border-border rounded-lg overflow-hidden", className)}>
+    <div className={cn("border border-kumo-line rounded-lg overflow-hidden", className)}>
       {/* Header */}
-      <div className="px-3 py-2 bg-muted/50 border-b border-border flex items-center justify-between">
+      <div className="px-3 py-2 bg-kumo-tint/50 border-b border-kumo-line flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <HugeiconsIcon 
-            icon={Clock01Icon} 
-            className="size-3.5 text-muted-foreground" 
-            strokeWidth={2} 
-          />
+          <ClockIcon size={14} className="text-kumo-strong" />
           <span className="text-xs font-medium">Query History</span>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[10px] text-kumo-strong">
             ({displayEntries.length})
           </span>
         </div>
@@ -248,9 +236,9 @@ export function QueryHistory({
             variant="ghost"
             size="sm"
             onClick={onClear}
-            className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive"
+            className="h-6 px-2 text-[10px] text-kumo-strong hover:text-kumo-danger"
           >
-            <HugeiconsIcon icon={Delete02Icon} className="size-3 mr-1" strokeWidth={2} />
+            <TrashIcon size={12} className="mr-1" />
             Clear
           </Button>
         )}

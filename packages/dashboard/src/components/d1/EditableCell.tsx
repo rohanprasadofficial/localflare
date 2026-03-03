@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback, memo } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@cloudflare/kumo'
 import type { D1CellValue, D1Column } from './types'
 
 interface EditableCellProps {
@@ -161,9 +161,9 @@ export const EditableCell = memo(function EditableCell({
         onKeyDown={handleKeyDown}
         className={cn(
           'w-full px-2 py-1 -my-1 -mx-2',
-          'bg-background border border-primary rounded',
+          'bg-kumo-base border border-kumo-brand rounded',
           'text-xs font-mono',
-          'focus:outline-none focus:ring-2 focus:ring-primary/20'
+          'focus:outline-none focus:ring-2 focus:ring-kumo-brand/20'
         )}
       />
     )
@@ -176,17 +176,17 @@ export const EditableCell = memo(function EditableCell({
       className={cn(
         'px-1 py-0.5 rounded text-xs font-mono truncate min-h-5',
         'transition-colors duration-100',
-        canEdit && 'cursor-text hover:bg-muted/50',
-        isNull && 'text-muted-foreground italic',
-        isBlob && 'text-muted-foreground',
-        isPrimaryKey && 'font-semibold text-primary/80',
+        canEdit && 'cursor-text hover:bg-kumo-tint/50',
+        isNull && 'text-kumo-strong italic',
+        isBlob && 'text-kumo-strong',
+        isPrimaryKey && 'font-semibold text-kumo-brand',
       )}
       title={canEdit ? 'Double-click to edit' : undefined}
     >
       {isNull ? (
-        <span className="text-muted-foreground/60">NULL</span>
+        <span className="text-kumo-inactive">NULL</span>
       ) : isBlob ? (
-        <span className="text-muted-foreground">{displayValue}</span>
+        <span className="text-kumo-strong">{displayValue}</span>
       ) : (
         displayValue
       )}

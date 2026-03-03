@@ -21,7 +21,7 @@ import {
   type Completion,
 } from '@codemirror/autocomplete'
 import { oneDark } from '@codemirror/theme-one-dark'
-import { cn } from '@/lib/utils'
+import { cn } from '@cloudflare/kumo'
 import type { D1TableSchema, SQLEditorProps } from './types'
 
 // ============================================================================
@@ -365,7 +365,7 @@ export function SQLEditor({
   
   // Detect dark mode from document
   const isDarkMode = useCallback(() => {
-    return document.documentElement.classList.contains('dark')
+    return document.documentElement.classList.contains('dark') || document.documentElement.getAttribute('data-mode') === 'dark'
   }, [])
   
   const createExtensions = useCallback(() => {
@@ -465,7 +465,7 @@ export function SQLEditor({
     
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ['class', 'data-mode'],
     })
     
     return () => observer.disconnect()
@@ -487,8 +487,8 @@ export function SQLEditor({
     <div
       ref={containerRef}
       className={cn(
-        'rounded-md border border-input bg-card overflow-hidden',
-        'focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50',
+        'rounded-md border border-kumo-line bg-kumo-base overflow-hidden',
+        'focus-within:ring-2 focus-within:ring-kumo-brand/20 focus-within:border-kumo-brand/50',
         disabled && 'opacity-50 cursor-not-allowed',
         className
       )}

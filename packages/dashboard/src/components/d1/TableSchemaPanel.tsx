@@ -8,18 +8,17 @@
  */
 
 import { useMemo } from 'react'
-import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Key01Icon,
-  Database02Icon,
-  Link01Icon,
-  TextNumberSignIcon,
-  TextIcon,
-  ToggleOnIcon,
-  Calendar01Icon,
+  KeyIcon,
+  DatabaseIcon,
+  LinkIcon,
+  HashIcon,
+  TextAaIcon,
+  ToggleRightIcon,
+  CalendarIcon,
   FileIcon,
-} from '@hugeicons/core-free-icons'
-import { cn } from '@/lib/utils'
+} from '@phosphor-icons/react'
+import { cn } from '@cloudflare/kumo'
 import type { D1TableSchema, D1Column } from './types'
 
 // ============================================================================
@@ -43,14 +42,14 @@ interface TableSchemaProps {
 function getTypeIcon(type: string) {
   const upperType = type.toUpperCase()
   
-  if (upperType.includes('INT')) return TextNumberSignIcon
-  if (upperType.includes('TEXT') || upperType.includes('VARCHAR') || upperType.includes('CHAR')) return TextIcon
-  if (upperType.includes('REAL') || upperType.includes('FLOAT') || upperType.includes('DOUBLE')) return TextNumberSignIcon
-  if (upperType.includes('BOOL')) return ToggleOnIcon
-  if (upperType.includes('DATE') || upperType.includes('TIME')) return Calendar01Icon
+  if (upperType.includes('INT')) return HashIcon
+  if (upperType.includes('TEXT') || upperType.includes('VARCHAR') || upperType.includes('CHAR')) return TextAaIcon
+  if (upperType.includes('REAL') || upperType.includes('FLOAT') || upperType.includes('DOUBLE')) return HashIcon
+  if (upperType.includes('BOOL')) return ToggleRightIcon
+  if (upperType.includes('DATE') || upperType.includes('TIME')) return CalendarIcon
   if (upperType.includes('BLOB')) return FileIcon
-  
-  return Database02Icon
+
+  return DatabaseIcon
 }
 
 /**
@@ -100,23 +99,20 @@ function ColumnRow({ column, isPrimaryKey, isLast }: ColumnRowProps) {
     <div 
       className={cn(
         "grid grid-cols-[auto_1fr_auto] gap-3 px-4 py-3",
-        "hover:bg-muted/50 transition-colors",
-        !isLast && "border-b border-border"
+        "hover:bg-kumo-tint/50 transition-colors",
+        !isLast && "border-b border-kumo-line"
       )}
     >
       {/* Icon */}
       <div className={cn(
         "size-8 rounded-md flex items-center justify-center shrink-0",
-        isPrimaryKey ? "bg-primary/10" : "bg-muted"
+        isPrimaryKey ? "bg-kumo-brand/10" : "bg-kumo-fill"
       )}>
-        <HugeiconsIcon 
-          icon={isPrimaryKey ? Key01Icon : TypeIcon} 
-          className={cn(
-            "size-4",
-            isPrimaryKey ? "text-primary" : "text-muted-foreground"
-          )} 
-          strokeWidth={2} 
-        />
+        {isPrimaryKey ? (
+          <KeyIcon size={16} className="text-kumo-brand" />
+        ) : (
+          <TypeIcon size={16} className="text-kumo-strong" />
+        )}
       </div>
       
       {/* Column info */}
@@ -124,11 +120,11 @@ function ColumnRow({ column, isPrimaryKey, isLast }: ColumnRowProps) {
         <div className="flex items-baseline gap-2">
           <span className={cn(
             "font-medium text-sm truncate",
-            isPrimaryKey && "text-primary"
+            isPrimaryKey && "text-kumo-brand"
           )}>
             {column.name}
           </span>
-          <span className="text-xs text-muted-foreground font-mono uppercase shrink-0">
+          <span className="text-xs text-kumo-strong font-mono uppercase shrink-0">
             {getTypeLabel(column.type)}
           </span>
         </div>
@@ -141,11 +137,11 @@ function ColumnRow({ column, isPrimaryKey, isLast }: ColumnRowProps) {
                 key={constraint}
                 className={cn(
                   "text-[10px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap",
-                  constraint === 'PRIMARY KEY' 
-                    ? "bg-primary/10 text-primary"
+                  constraint === 'PRIMARY KEY'
+                    ? "bg-kumo-brand/10 text-kumo-brand"
                     : constraint === 'NOT NULL'
-                    ? "bg-amber-500/10 text-amber-500"
-                    : "bg-muted text-muted-foreground"
+                    ? "bg-yellow-500/10 text-yellow-500"
+                    : "bg-kumo-fill text-kumo-strong"
                 )}
               >
                 {constraint}
@@ -158,8 +154,8 @@ function ColumnRow({ column, isPrimaryKey, isLast }: ColumnRowProps) {
       {/* Default value */}
       {column.dflt_value !== null ? (
         <div className="text-right shrink-0">
-          <div className="text-[10px] text-muted-foreground mb-0.5">Default</div>
-          <code className="text-xs font-mono text-foreground bg-muted px-1.5 py-0.5 rounded inline-block max-w-32 truncate">
+          <div className="text-[10px] text-kumo-strong mb-0.5">Default</div>
+          <code className="text-xs font-mono text-kumo-default bg-kumo-fill px-1.5 py-0.5 rounded inline-block max-w-32 truncate">
             {String(column.dflt_value)}
           </code>
         </div>
@@ -188,19 +184,15 @@ export function TableSchemaPanel({ schema, className }: TableSchemaProps) {
   }, [schema.columns, schema.primaryKeys])
   
   return (
-    <div className={cn("border border-border rounded-lg overflow-hidden flex flex-col", className)}>
+    <div className={cn("border border-kumo-line rounded-lg overflow-hidden flex flex-col", className)}>
       {/* Header */}
-      <div className="px-4 py-3 bg-muted/50 border-b border-border shrink-0">
+      <div className="px-4 py-3 bg-kumo-tint/50 border-b border-kumo-line shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <HugeiconsIcon 
-              icon={Database02Icon} 
-              className="size-4 text-d1" 
-              strokeWidth={2} 
-            />
+            <DatabaseIcon size={16} className="text-d1" />
             <span className="font-medium text-sm">{schema.name}</span>
           </div>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-kumo-strong">
             <span>{schema.columns.length} columns</span>
             <span>•</span>
             <span>{schema.rowCount.toLocaleString()} rows</span>
@@ -223,17 +215,17 @@ export function TableSchemaPanel({ schema, className }: TableSchemaProps) {
       </div>
       
       {/* Footer stats */}
-      <div className="px-4 py-2.5 bg-muted/30 border-t border-border shrink-0">
-        <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+      <div className="px-4 py-2.5 bg-kumo-tint/30 border-t border-kumo-line shrink-0">
+        <div className="flex items-center gap-4 text-[10px] text-kumo-strong">
           {schema.primaryKeys.length > 0 && (
             <div className="flex items-center gap-1">
-              <HugeiconsIcon icon={Key01Icon} className="size-3" strokeWidth={2} />
+              <KeyIcon size={12} />
               <span>Primary: {schema.primaryKeys.join(', ')}</span>
             </div>
           )}
           {schema.indexes.length > 0 && (
             <div className="flex items-center gap-1">
-              <HugeiconsIcon icon={Link01Icon} className="size-3" strokeWidth={2} />
+              <LinkIcon size={12} />
               <span>{schema.indexes.length} indexes</span>
             </div>
           )}
