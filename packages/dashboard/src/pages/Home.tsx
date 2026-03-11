@@ -1,79 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
-  DatabaseIcon,
-  HardDriveIcon,
-  FolderIcon,
-  StackIcon,
-  QueueIcon,
   ArrowRightIcon,
   ChartBarIcon,
-  type Icon,
 } from "@phosphor-icons/react"
 import { Link } from "react-router-dom"
 import { Text, cn } from "@cloudflare/kumo"
 import { bindingsApi } from "@/lib/api"
 import { DataTableLoading } from "@/components/ui/data-table"
 import { LandingPage } from "@/components/landing/LandingPage"
-
-interface ServiceConfig {
-  key: string
-  title: string
-  description: string
-  icon: Icon
-  path: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getCount: (bindings: any) => number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getItems: (bindings: any) => string[]
-}
-
-const services: ServiceConfig[] = [
-  {
-    key: "d1",
-    title: "D1 Databases",
-    description: "SQLite databases at the edge",
-    icon: DatabaseIcon,
-    path: "/d1",
-    getCount: (bindings) => bindings.d1?.length ?? 0,
-    getItems: (bindings) => bindings.d1?.map((d: { binding: string }) => d.binding) ?? [],
-  },
-  {
-    key: "kv",
-    title: "KV Namespaces",
-    description: "Key-value storage",
-    icon: HardDriveIcon,
-    path: "/kv",
-    getCount: (bindings) => bindings.kv?.length ?? 0,
-    getItems: (bindings) => bindings.kv?.map((k: { binding: string }) => k.binding) ?? [],
-  },
-  {
-    key: "r2",
-    title: "R2 Buckets",
-    description: "Object storage",
-    icon: FolderIcon,
-    path: "/r2",
-    getCount: (bindings) => bindings.r2?.length ?? 0,
-    getItems: (bindings) => bindings.r2?.map((r: { binding: string }) => r.binding) ?? [],
-  },
-  {
-    key: "do",
-    title: "Durable Objects",
-    description: "Stateful serverless",
-    icon: StackIcon,
-    path: "/do",
-    getCount: (bindings) => bindings.durableObjects?.length ?? 0,
-    getItems: (bindings) => bindings.durableObjects?.map((d: { binding: string }) => d.binding) ?? [],
-  },
-  {
-    key: "queues",
-    title: "Queues",
-    description: "Message queues",
-    icon: QueueIcon,
-    path: "/queues",
-    getCount: (bindings) => bindings.queues?.producers?.length ?? 0,
-    getItems: (bindings) => bindings.queues?.producers?.map((q: { binding: string }) => q.binding) ?? [],
-  },
-]
+import { ArchitectureDiagram, getBindingGroups } from "@/components/architecture/ArchitectureView"
 
 export function Home() {
   const queryClient = useQueryClient()
@@ -105,13 +40,13 @@ export function Home() {
   const totalQueues = bindings?.bindings.queues?.producers?.length ?? 0
   const totalBindings = totalD1 + totalKV + totalR2 + totalDO + totalQueues
 
-  const activeServices = services.filter((s) => s.getCount(bindings?.bindings) > 0)
+  const groups = bindings ? getBindingGroups(bindings.bindings) : []
 
   return (
     <div className="h-full overflow-auto">
-      <div className="max-w-5xl mx-auto px-8 py-8">
+      <div className="max-w-6xl mx-auto px-8 py-8">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <Text variant="heading1" as="h1">Overview</Text>
           <p className="text-sm text-kumo-strong mt-1">
             Local dashboard for {bindings?.name ?? "your Worker"}
@@ -119,54 +54,32 @@ export function Home() {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px rounded-lg border border-kumo-line bg-kumo-line overflow-hidden mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-px rounded-lg border border-kumo-line bg-kumo-line overflow-hidden mb-6">
           <StatCell label="D1 Databases" value={totalD1} />
           <StatCell label="KV Namespaces" value={totalKV} />
           <StatCell label="R2 Buckets" value={totalR2} />
+          <StatCell label="Durable Objects" value={totalDO} />
           <StatCell label="Total Bindings" value={totalBindings} />
         </div>
 
-        {/* Services Table */}
-        {activeServices.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-sm font-medium text-kumo-default mb-3">Services</h2>
-            <div className="rounded-lg border border-kumo-line overflow-hidden">
-              {activeServices.map((service, i) => {
-                const count = service.getCount(bindings?.bindings)
-                const items = service.getItems(bindings?.bindings)
-                return (
-                  <Link
-                    key={service.key}
-                    to={service.path}
-                    className={cn(
-                      "group flex items-center gap-4 px-4 py-3 bg-kumo-base hover:bg-kumo-tint/40 transition-colors",
-                      i > 0 && "border-t border-kumo-line"
-                    )}
-                  >
-                    <service.icon size={18} className="text-kumo-strong shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm text-kumo-default">{service.title}</span>
-                      {items.length > 0 && (
-                        <span className="ml-2 text-xs text-kumo-subtle">
-                          {items.slice(0, 3).join(", ")}
-                          {items.length > 3 && ` +${items.length - 3}`}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-sm text-kumo-strong tabular-nums">{count}</span>
-                    <ArrowRightIcon
-                      size={14}
-                      className="text-kumo-subtle group-hover:text-kumo-default transition-colors shrink-0"
-                    />
-                  </Link>
-                )
-              })}
+        {/* Architecture Diagram */}
+        {groups.length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-sm font-medium text-kumo-default mb-3">Architecture</h2>
+            <div className="rounded-lg border border-kumo-line bg-kumo-base overflow-hidden px-6 py-8">
+              <ArchitectureDiagram
+                workerName={bindings?.name ?? "Worker"}
+                groups={groups}
+              />
             </div>
+            <p className="text-[11px] text-kumo-subtle mt-2">
+              Click on a binding group to explore it
+            </p>
           </section>
         )}
 
         {/* Quick Links */}
-        <section className="mb-8">
+        <section className="mb-6">
           <h2 className="text-sm font-medium text-kumo-default mb-3">Quick Links</h2>
           <div className="rounded-lg border border-kumo-line overflow-hidden">
             <Link
