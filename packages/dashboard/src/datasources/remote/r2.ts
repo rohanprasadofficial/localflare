@@ -24,27 +24,11 @@ interface TempCredentials {
   expiresAt: number
 }
 
-const CORS_RULE = `<?xml version="1.0" encoding="UTF-8"?>
-<CORSConfiguration>
-  <CORSRule>
-    <AllowedOrigin>*</AllowedOrigin>
-    <AllowedMethod>GET</AllowedMethod>
-    <AllowedMethod>PUT</AllowedMethod>
-    <AllowedMethod>DELETE</AllowedMethod>
-    <AllowedMethod>HEAD</AllowedMethod>
-    <AllowedHeader>*</AllowedHeader>
-    <ExposeHeader>ETag</ExposeHeader>
-    <ExposeHeader>Content-Length</ExposeHeader>
-    <ExposeHeader>Content-Type</ExposeHeader>
-    <ExposeHeader>Last-Modified</ExposeHeader>
-    <MaxAgeSeconds>3600</MaxAgeSeconds>
-  </CORSRule>
-</CORSConfiguration>`
 
 export class RemoteR2DataSource implements R2DataSource {
   private tempCreds: TempCredentials | null = null
+  private tempCredsBucket: string | null = null
   private s3Client: AwsClient | null = null
-  private corsConfiguredBuckets = new Set<string>()
 
   constructor(
     private readonly client: CloudflareClient,
@@ -61,7 +45,6 @@ export class RemoteR2DataSource implements R2DataSource {
 
   async listObjects(binding: string, opts?: ListObjectsOpts): Promise<ObjectListResult> {
     const s3 = await this.getS3Client(binding)
-    await this.ensureCors(binding, s3)
 
     const params = new URLSearchParams({ 'list-type': '2' })
     if (opts?.prefix) params.set('prefix', opts.prefix)
@@ -69,7 +52,7 @@ export class RemoteR2DataSource implements R2DataSource {
     if (opts?.limit) params.set('max-keys', String(opts.limit))
 
     const url = `${this.getEndpoint()}/${binding}?${params}`
-    const response = await this.fetchWithCorsHandling(s3, url, undefined, binding)
+    const response = await this.proxyFetch(s3, url)
     const xml = await response.text()
 
     return this.parseListObjectsResponse(xml)
@@ -77,10 +60,9 @@ export class RemoteR2DataSource implements R2DataSource {
 
   async getObjectMeta(binding: string, key: string): Promise<R2ObjectInfo> {
     const s3 = await this.getS3Client(binding)
-    await this.ensureCors(binding, s3)
 
     const url = `${this.getEndpoint()}/${binding}/${encodeURIComponent(key)}`
-    const response = await this.fetchWithCorsHandling(s3, url, { method: 'HEAD' }, binding)
+    const response = await this.proxyFetch(s3, url, { method: 'HEAD' })
 
     if (!response.ok) {
       throw new Error(`Failed to get object metadata: HTTP ${response.status}`)
@@ -105,10 +87,9 @@ export class RemoteR2DataSource implements R2DataSource {
 
   async getObjectContent(binding: string, key: string): Promise<Response> {
     const s3 = await this.getS3Client(binding)
-    await this.ensureCors(binding, s3)
 
     const url = `${this.getEndpoint()}/${binding}/${encodeURIComponent(key)}`
-    const response = await this.fetchWithCorsHandling(s3, url, undefined, binding)
+    const response = await this.proxyFetch(s3, url)
 
     if (!response.ok) {
       throw new Error(`Failed to fetch object: HTTP ${response.status}`)
@@ -119,14 +100,13 @@ export class RemoteR2DataSource implements R2DataSource {
 
   async uploadObject(binding: string, key: string, file: File): Promise<UploadResult> {
     const s3 = await this.getS3Client(binding)
-    await this.ensureCors(binding, s3)
 
     const url = `${this.getEndpoint()}/${binding}/${encodeURIComponent(key)}`
-    const response = await this.fetchWithCorsHandling(s3, url, {
+    const response = await this.proxyFetch(s3, url, {
       method: 'PUT',
       body: file,
       headers: { 'Content-Type': file.type || 'application/octet-stream' },
-    }, binding)
+    })
 
     if (!response.ok) {
       throw new Error(`Failed to upload object: HTTP ${response.status}`)
@@ -142,10 +122,9 @@ export class RemoteR2DataSource implements R2DataSource {
 
   async deleteObject(binding: string, key: string): Promise<void> {
     const s3 = await this.getS3Client(binding)
-    await this.ensureCors(binding, s3)
 
     const url = `${this.getEndpoint()}/${binding}/${encodeURIComponent(key)}`
-    const response = await this.fetchWithCorsHandling(s3, url, { method: 'DELETE' }, binding)
+    const response = await this.proxyFetch(s3, url, { method: 'DELETE' })
 
     if (!response.ok) {
       throw new Error(`Failed to delete object: HTTP ${response.status}`)
@@ -157,54 +136,29 @@ export class RemoteR2DataSource implements R2DataSource {
   }
 
   /**
-   * Wraps S3 fetch calls with CORS error detection.
-   * If a request fails due to CORS, attempts to configure CORS and retry once.
+   * Sends the request through the local Vite proxy which signs and
+   * forwards to R2 server-side, bypassing browser CORS restrictions.
    */
-  private async fetchWithCorsHandling(
-    s3: AwsClient,
-    url: string,
-    init: RequestInit | undefined,
-    bucket: string
-  ): Promise<Response> {
-    try {
-      return await s3.fetch(url, init)
-    } catch (err) {
-      if (this.isCorsError(err)) {
-        this.corsConfiguredBuckets.delete(bucket)
-        await this.ensureCors(bucket, s3)
-        return s3.fetch(url, init)
-      }
-      throw err
+  private async proxyFetch(_s3: AwsClient, url: string, init?: RequestInit): Promise<Response> {
+    if (!this.tempCreds) {
+      throw new Error('No R2 credentials available')
     }
-  }
-
-  private isCorsError(err: unknown): boolean {
-    if (err instanceof TypeError && err.message === 'Failed to fetch') return true
-    if (err instanceof DOMException && err.name === 'NetworkError') return true
-    return false
-  }
-
-  /**
-   * Ensures CORS is configured on the bucket for browser access.
-   * Uses PutBucketCors (S3 API) to set permissive CORS rules.
-   * Only runs once per bucket per session.
-   */
-  private async ensureCors(bucket: string, s3: AwsClient): Promise<void> {
-    if (this.corsConfiguredBuckets.has(bucket)) return
-
-    try {
-      const url = `${this.getEndpoint()}/${bucket}?cors`
-      await s3.fetch(url, {
-        method: 'PUT',
-        body: CORS_RULE,
-        headers: { 'Content-Type': 'application/xml' },
-      })
-      this.corsConfiguredBuckets.add(bucket)
-    } catch {
-      // CORS configuration failed — bucket may not allow it, or credentials lack permission.
-      // Mark as attempted so we don't retry every request.
-      this.corsConfiguredBuckets.add(bucket)
+    const method = init?.method || 'GET'
+    const headers: Record<string, string> = {
+      'x-r2-target-url': url,
+      'x-r2-access-key-id': this.tempCreds.accessKeyId,
+      'x-r2-secret-access-key': this.tempCreds.secretAccessKey,
+      'x-r2-session-token': this.tempCreds.sessionToken,
     }
+    if (init?.headers) {
+      const h = init.headers as Record<string, string>
+      if (h['Content-Type']) headers['Content-Type'] = h['Content-Type']
+    }
+    return fetch('/r2-s3-proxy', {
+      method,
+      headers,
+      body: ['GET', 'HEAD'].includes(method) ? undefined : init?.body,
+    })
   }
 
   private async getS3Client(bucket: string): Promise<AwsClient> {
@@ -214,7 +168,7 @@ export class RemoteR2DataSource implements R2DataSource {
       )
     }
 
-    if (this.s3Client && this.tempCreds && Date.now() < this.tempCreds.expiresAt - 60_000) {
+    if (this.s3Client && this.tempCreds && this.tempCredsBucket === bucket && Date.now() < this.tempCreds.expiresAt - 60_000) {
       return this.s3Client
     }
 
@@ -236,6 +190,7 @@ export class RemoteR2DataSource implements R2DataSource {
       ...result,
       expiresAt: Date.now() + 900_000,
     }
+    this.tempCredsBucket = bucket
 
     this.s3Client = new AwsClient({
       accessKeyId: result.accessKeyId,

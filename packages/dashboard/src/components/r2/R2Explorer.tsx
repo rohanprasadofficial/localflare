@@ -63,7 +63,8 @@ function FilePreview({ bucket, objectKey, contentType, size }: { bucket: string;
   const [error, setError] = useState<string | null>(null)
 
   const fileType = getFileType(contentType, objectKey)
-  const objectUrl = ds.r2.getObjectUrl(bucket, objectKey)
+  const directUrl = ds.r2.getObjectUrl(bucket, objectKey)
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if ((fileType === 'text' || fileType === 'json' || fileType === 'code') && size < 1024 * 1024) {
@@ -78,6 +79,27 @@ function FilePreview({ bucket, objectKey, contentType, size }: { bucket: string;
         .finally(() => setLoading(false))
     }
   }, [bucket, objectKey, fileType, size])
+
+  // For media types (image/video/audio), fetch via proxy and create blob URL when no direct URL
+  useEffect(() => {
+    // Revoke previous blob URL
+    if (blobUrl) {
+      URL.revokeObjectURL(blobUrl)
+      setBlobUrl(null)
+    }
+    if (directUrl || !['image', 'video', 'audio'].includes(fileType)) return
+    let cancelled = false
+    ds.r2.getObjectContent(bucket, objectKey)
+      .then(async (response) => {
+        const blob = await response.blob()
+        if (!cancelled) setBlobUrl(URL.createObjectURL(blob))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bucket, objectKey, fileType, directUrl])
+
+  const objectUrl = directUrl ?? blobUrl
 
   if (fileType === 'image') {
     return (

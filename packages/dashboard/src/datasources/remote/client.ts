@@ -1,7 +1,7 @@
 /** Cloudflare REST API v4 client. Unwraps the CF response envelope. */
 import type { CloudflareCredentials } from '../types'
 
-const CF_API_BASE = 'https://api.cloudflare.com/client/v4'
+const CF_API_BASE = '/cf-api'
 
 interface CloudflareApiError {
   code: number
@@ -110,7 +110,7 @@ export class CloudflareClient {
 
   async validate(): Promise<{ valid: boolean; email?: string }> {
     try {
-      const response = await fetch(`${CF_API_BASE}/user/tokens/verify`, {
+      const response = await fetch(`${CF_API_BASE}/accounts/${this.accountId}/tokens/verify`, {
         headers: { 'Authorization': `Bearer ${this.apiToken}` },
       })
       const data = await response.json() as CloudflareEnvelope<{ id: string; status: string }>
