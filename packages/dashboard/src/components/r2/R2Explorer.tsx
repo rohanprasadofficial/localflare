@@ -206,12 +206,14 @@ export function R2Explorer() {
   const { data: buckets, isLoading: loadingBuckets } = useQuery({
     queryKey: queryKeys.r2.buckets(mode),
     queryFn: () => ds.r2.listBuckets().then(buckets => ({ buckets })),
+    staleTime: 5 * 60 * 1000,
   })
 
   const { data: objects, isLoading: loadingObjects, refetch: refetchObjects } = useQuery({
     queryKey: queryKeys.r2.objects(mode, selectedBucket ?? ''),
     queryFn: () => selectedBucket ? ds.r2.listObjects(selectedBucket) : null,
     enabled: !!selectedBucket,
+    staleTime: 2 * 60 * 1000,
   })
 
   const { data: objectMeta } = useQuery({
@@ -221,6 +223,7 @@ export function R2Explorer() {
         ? ds.r2.getObjectMeta(selectedBucket, selectedObject)
         : null,
     enabled: !!selectedBucket && !!selectedObject && selectedType === "file",
+    staleTime: 2 * 60 * 1000,
   })
 
   const deleteObjectMutation = useMutation({
