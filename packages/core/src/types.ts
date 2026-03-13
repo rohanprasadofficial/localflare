@@ -8,6 +8,8 @@ export interface WranglerConfig {
   r2_buckets?: R2BucketConfig[]
   durable_objects?: DurableObjectsConfig
   queues?: QueuesConfig
+  workflows?: WorkflowConfig[]
+  services?: ServiceConfig[]
   vars?: Record<string, string>
 }
 
@@ -64,6 +66,19 @@ export interface QueueConsumerConfig {
   retry_delay?: number
 }
 
+export interface WorkflowConfig {
+  name: string
+  binding: string
+  class_name: string
+  script_name?: string
+}
+
+export interface ServiceConfig {
+  binding: string
+  service: string
+  environment?: string
+}
+
 export interface DiscoveredBindings {
   d1: D1DatabaseConfig[]
   kv: KVNamespaceConfig[]
@@ -104,4 +119,5 @@ export interface LocalflareManifest {
   }
   do: { binding: string; className: string }[]
   vars: { key: string; value: string; isSecret: boolean }[]
+  workers: { name: string; configPath: string }[]
 }

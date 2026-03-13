@@ -1,7 +1,7 @@
 import { cac } from 'cac'
 import pc from 'picocolors'
 import { spawn } from 'node:child_process'
-import { findWranglerConfig, WRANGLER_CONFIG_FILES } from 'localflare-core'
+import { findWranglerConfig, WRANGLER_CONFIG_FILES, resolveAllConfigs } from 'localflare-core'
 import { existsSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import open from 'open'
@@ -57,11 +57,19 @@ cli
       resolvedConfig = detectedConfig
     }
 
+    // Discover all referenced worker configs via script_name
+    const allConfigs = resolveAllConfigs(resolvedConfig)
+
     console.log(pc.dim(`  👀 Detected: ${resolvedConfig}`))
+    if (allConfigs.length > 1) {
+      for (const c of allConfigs.slice(1)) {
+        console.log(pc.dim(`  👀 Discovered: ${c.path} (${c.config.name || 'unnamed'})`))
+      }
+    }
 
     try {
-      // Setup .localflare directory with shadow config
-      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, true)
+      // Setup .localflare directory with shadow config (merged from all configs)
+      const { shadowConfigPath, manifest } = setupLocalflareDir(allConfigs, true)
 
       // Display linked bindings
       const bindingLines = formatBindings(manifest)
@@ -78,20 +86,21 @@ cli
       console.log(pc.dim(`  🚀 Starting Development Environment...`))
       console.log('')
 
-      // Spawn wrangler dev with both configs
+      // Spawn wrangler dev with all configs
       // localflare-api is PRIMARY (first) - handles /__localflare/* and proxies rest to user's worker
-      // user's worker is SECONDARY (second) - accessed via service binding
-      // --persist-to ensures both workers share the same state directory
+      // user's workers are SECONDARY - accessed via service binding
+      // --persist-to ensures all workers share the same state directory
       const persistPath = options.persistTo
         ? resolve(options.persistTo)
         : join(dirname(resolvedConfig), '.wrangler', 'state')
 
-      // Build wrangler args
+      // Build wrangler args with all config paths
       // Use passthrough args (after --) for any wrangler-specific options
+      const configFlags = allConfigs.flatMap((c) => ['-c', c.path])
       const wranglerArgs = [
         'wrangler', 'dev',
         '-c', shadowConfigPath,  // Localflare API (primary - gets the port)
-        '-c', resolvedConfig,    // User's worker (secondary - via service binding)
+        ...configFlags,          // User's workers (secondary - via service binding)
         '--persist-to', persistPath,
         '--port', String(workerPort),
         ...wranglerPassthrough,  // Pass through any args after '--'
@@ -261,11 +270,19 @@ cli
       resolvedConfig = detectedConfig
     }
 
+    // Discover all referenced worker configs via script_name
+    const allConfigs = resolveAllConfigs(resolvedConfig)
+
     console.log(pc.dim(`  👀 Detected: ${resolvedConfig}`))
+    if (allConfigs.length > 1) {
+      for (const c of allConfigs.slice(1)) {
+        console.log(pc.dim(`  👀 Discovered: ${c.path} (${c.config.name || 'unnamed'})`))
+      }
+    }
 
     try {
       // Setup .localflare directory (but don't add service binding - standalone mode)
-      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, false) // isPrimary=false
+      const { shadowConfigPath, manifest } = setupLocalflareDir(allConfigs, false) // isPrimary=false
 
       // Display bindings
       const bindingLines = formatBindings(manifest)
@@ -285,9 +302,12 @@ cli
         ? resolve(options.persistTo)
         : join(dirname(resolvedConfig), '.wrangler', 'state')
 
+      // Include discovered worker configs so DO stubs, workflows, etc. resolve
+      const configFlags = allConfigs.flatMap((c) => ['-c', c.path])
       const wranglerArgs = [
         'wrangler', 'dev',
         '-c', shadowConfigPath,
+        ...configFlags,
         '--persist-to', persistPath,
         '--port', String(apiPort),
       ]
