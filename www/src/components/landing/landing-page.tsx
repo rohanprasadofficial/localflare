@@ -10,6 +10,7 @@ import {
   Copy01Icon,
   Tick01Icon,
   Wifi01Icon,
+  Globe02Icon,
 } from '@hugeicons/core-free-icons';
 
 const Testimonials = lazy(() =>
@@ -61,6 +62,13 @@ export function LandingPage() {
       title: 'Network Inspector',
       description: 'See every request in real-time. Inspect headers, bodies, and response times.',
       color: 'text-cyan-400',
+    },
+    {
+      icon: Globe02Icon,
+      name: 'Cloud',
+      title: 'Cloud Mode',
+      description: 'Connect to your live Cloudflare account. Browse production D1, KV, R2, and Queues without leaving Localflare.',
+      color: 'text-orange-400',
     },
   ];
 
@@ -145,13 +153,13 @@ export function LandingPage() {
             The missing dashboard for
             <br />
             <span className="bg-gradient-to-r from-[#f97316] to-[#fb923c] bg-clip-text text-transparent">
-              local Cloudflare development
+              Cloudflare development
             </span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-zinc-500 sm:text-lg">
             Visualize and interact with your D1 databases, KV namespaces, R2 buckets,
-            Durable Objects, and Queues—all running locally with real bindings.
+            Durable Objects, and Queues—locally with real bindings or connected to your live Cloudflare account.
           </p>
 
           <div className="mt-8 flex items-center justify-center">
@@ -429,6 +437,91 @@ export function LandingPage() {
                   <div>
                     <span className="text-zinc-300 font-medium text-sm">Works with any framework</span>
                     <p className="text-zinc-600 text-xs mt-0.5">Hono, Remix, Next.js, and more</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Cloud Mode */}
+      <section className="py-20 border-t border-white/5">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-start">
+            {/* Content */}
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 border border-orange-500/20 px-3 py-1 text-xs text-orange-400 mb-4">
+                <HugeiconsIcon icon={Globe02Icon} size={12} strokeWidth={2} />
+                New
+              </div>
+              <h2 className="text-2xl font-semibold text-zinc-100 mb-4 sm:text-3xl">
+                Local and cloud, one dashboard
+              </h2>
+              <p className="text-zinc-500 leading-relaxed mb-6 text-sm sm:text-base">
+                Switch between your local dev environment and your live Cloudflare account with a single
+                click. Browse production databases, inspect KV data, and manage R2 files—all without
+                leaving Localflare.
+              </p>
+
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-emerald-500 mt-0.5">&#10003;</span>
+                  <div>
+                    <span className="text-zinc-300 font-medium text-sm">One-click toggle</span>
+                    <p className="text-zinc-600 text-xs mt-0.5">Switch between Local and Remote mode instantly</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-emerald-500 mt-0.5">&#10003;</span>
+                  <div>
+                    <span className="text-zinc-300 font-medium text-sm">Full D1, KV, R2, and Queues support</span>
+                    <p className="text-zinc-600 text-xs mt-0.5">Read and write to production resources via Cloudflare API</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-emerald-500 mt-0.5">&#10003;</span>
+                  <div>
+                    <span className="text-zinc-300 font-medium text-sm">Secure token-based auth</span>
+                    <p className="text-zinc-600 text-xs mt-0.5">Uses Cloudflare API tokens with scoped permissions</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual */}
+            <div className="rounded-lg bg-[#141414] border border-white/5 p-5">
+              <div className="font-mono text-sm space-y-3">
+                <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+                  <div className="flex items-center gap-1.5 rounded-full bg-zinc-800 px-3 py-1 text-xs">
+                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-zinc-400">Local</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 rounded-full bg-orange-500/20 border border-orange-500/30 px-3 py-1 text-xs">
+                    <span className="size-1.5 rounded-full bg-orange-500" />
+                    <span className="text-orange-400">Remote</span>
+                  </div>
+                </div>
+                <div className="space-y-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500">&#10003;</span>
+                    <span className="text-zinc-400">Connected to <span className="text-orange-400">Cloudflare API</span></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500">&#10003;</span>
+                    <span className="text-zinc-400">Found <span className="text-blue-400">3 D1 databases</span></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500">&#10003;</span>
+                    <span className="text-zinc-400">Found <span className="text-emerald-400">2 KV namespaces</span></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500">&#10003;</span>
+                    <span className="text-zinc-400">Found <span className="text-violet-400">5 R2 buckets</span></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-500">&#10003;</span>
+                    <span className="text-zinc-400">Found <span className="text-amber-400">1 Queue</span></span>
                   </div>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import {
   CommandIcon,
   AlertCircleIcon,
   Settings02Icon,
+  Globe02Icon,
 } from '@hugeicons/core-free-icons';
 import { cn } from '@/lib/utils';
 
@@ -90,6 +91,17 @@ export const WIKI_SECTIONS: WikiSection[] = [
       { id: 'queues-overview', title: 'Overview' },
       { id: 'queues-messages', title: 'Message Viewer' },
       { id: 'queues-testing', title: 'Testing Messages' },
+    ],
+  },
+  {
+    id: 'cloud-mode',
+    title: 'Cloud Mode',
+    icon: Globe02Icon,
+    children: [
+      { id: 'cloud-overview', title: 'Overview' },
+      { id: 'cloud-setup', title: 'Setup & Authentication' },
+      { id: 'cloud-supported', title: 'Supported Services' },
+      { id: 'cloud-architecture', title: 'How It Works' },
     ],
   },
   {

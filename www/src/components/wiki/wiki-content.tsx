@@ -217,6 +217,13 @@ export function WikiContent({ activeSection }: { activeSection: string }) {
     'queues-messages': <QueuesMessagesSection />,
     'queues-testing': <QueuesTestingSection />,
 
+    // Cloud Mode
+    'cloud-mode': <CloudModeSection />,
+    'cloud-overview': <CloudOverviewSection />,
+    'cloud-setup': <CloudSetupSection />,
+    'cloud-supported': <CloudSupportedSection />,
+    'cloud-architecture': <CloudArchitectureSection />,
+
     // Advanced
     'advanced': <AdvancedSection />,
     'requirements': <RequirementsSection />,
@@ -1343,6 +1350,262 @@ localflare --persist-to /tmp/localflare-data
 }
 
 // ============================================
+// Cloud Mode Sections
+// ============================================
+
+function CloudModeSection() {
+  return (
+    <Section id="cloud-mode">
+      <H1>Cloud Mode</H1>
+      <P>
+        Localflare isn't just for local development anymore. With Cloud Mode, you can connect directly
+        to your production Cloudflare account and browse your live D1 databases, KV namespaces, R2 buckets,
+        and Queues—all from the same beautiful dashboard.
+      </P>
+      <Callout type="info">
+        Cloud Mode connects to the Cloudflare REST API using your API token. No wrangler process is required.
+      </Callout>
+    </Section>
+  );
+}
+
+function CloudOverviewSection() {
+  return (
+    <Section id="cloud-overview">
+      <H1>Cloud Mode Overview</H1>
+      <P>
+        Cloud Mode lets you switch between your local development environment and your live Cloudflare
+        account with a single click. Use the <Code>Local</Code> / <Code>Remote</Code> toggle in the
+        dashboard header to switch modes instantly.
+      </P>
+
+      <H2>Why Cloud Mode?</H2>
+      <List items={[
+        'Inspect production D1 data without logging into the Cloudflare dashboard',
+        'Browse R2 buckets and preview files directly in the Localflare UI',
+        'Check KV namespace values across environments',
+        'Monitor Queue configurations',
+        'Compare local and production data side by side',
+      ]} />
+
+      <H2>Key Features</H2>
+      <Table
+        headers={['Feature', 'Local Mode', 'Cloud Mode']}
+        rows={[
+          ['D1 Databases', 'Full read/write', 'Full read/write via API'],
+          ['KV Namespaces', 'Full read/write', 'Full read/write via API'],
+          ['R2 Buckets', 'Full read/write', 'Full read/write via S3 API'],
+          ['Queues', 'Send & consume', 'View configuration'],
+          ['Durable Objects', 'Full access', 'Coming soon'],
+          ['Network Inspector', 'Real-time', 'Not available (local only)'],
+        ]}
+      />
+    </Section>
+  );
+}
+
+function CloudSetupSection() {
+  return (
+    <Section id="cloud-setup">
+      <H1>Setup & Authentication</H1>
+      <P>
+        Cloud Mode requires a Cloudflare API token and your Account ID to connect.
+      </P>
+
+      <H2>Creating an API Token</H2>
+      <Steps items={[
+        {
+          title: 'Go to Cloudflare Dashboard',
+          content: 'Navigate to My Profile > API Tokens (not the account-level tokens page).',
+        },
+        {
+          title: 'Create a Custom Token',
+          content: 'Click "Create Token" and select "Create Custom Token".',
+        },
+        {
+          title: 'Add Permissions',
+          content: 'Add the following permissions: D1 (Edit), Workers KV Storage (Edit), Workers R2 Storage (Edit), Queues (Edit).',
+        },
+        {
+          title: 'Set Account Scope',
+          content: 'Under "Account Resources", select the account you want to access.',
+        },
+        {
+          title: 'Create and Copy',
+          content: 'Click "Continue to summary", then "Create Token". Copy the token immediately.',
+        },
+      ]} />
+
+      <Callout type="warning">
+        <strong>Use a User API Token</strong>, not an Account API Token. Account-level tokens don't
+        support all APIs (notably R2 bucket listing). User tokens work with all Cloudflare APIs.
+      </Callout>
+
+      <H2>Required Permissions</H2>
+      <Table
+        headers={['Permission', 'Access Level', 'Used For']}
+        rows={[
+          ['D1', 'Edit', 'Query databases, browse tables, edit data'],
+          ['Workers KV Storage', 'Edit', 'List namespaces, read/write keys'],
+          ['Workers R2 Storage', 'Edit', 'List buckets, upload/download objects'],
+          ['Queues', 'Edit', 'List queues, view configuration'],
+        ]}
+      />
+
+      <H2>Connecting in the Dashboard</H2>
+      <Steps items={[
+        {
+          title: 'Click the Cloud button',
+          content: 'In the dashboard header, click the cloud icon or the "Remote" toggle.',
+        },
+        {
+          title: 'Enter your credentials',
+          content: 'Paste your API Token and Account ID.',
+        },
+        {
+          title: 'Connect',
+          content: 'Click Connect. Localflare will verify your token and load your resources.',
+        },
+      ]} />
+
+      <H2>Finding Your Account ID</H2>
+      <P>
+        Your Account ID is visible in the Cloudflare dashboard URL:
+      </P>
+      <CodeBlock>{`https://dash.cloudflare.com/<ACCOUNT_ID>/...`}</CodeBlock>
+      <P>
+        You can also find it on the right sidebar of any zone's overview page.
+      </P>
+
+      <H2>R2 Access Keys (Optional)</H2>
+      <P>
+        For R2 file operations (upload, download, preview), you also need S3-compatible access keys:
+      </P>
+      <Steps items={[
+        {
+          title: 'Go to R2 > Manage R2 API Tokens',
+          content: 'In the Cloudflare dashboard, navigate to R2 and click "Manage R2 API Tokens".',
+        },
+        {
+          title: 'Create an API Token',
+          content: 'Create a token with Object Read & Write permissions for the buckets you need.',
+        },
+        {
+          title: 'Copy the Access Key ID and Secret',
+          content: 'Enter these in the Localflare Cloud Mode settings.',
+        },
+      ]} />
+    </Section>
+  );
+}
+
+function CloudSupportedSection() {
+  return (
+    <Section id="cloud-supported">
+      <H1>Supported Services</H1>
+      <P>
+        Cloud Mode supports most Localflare features through the Cloudflare REST API and S3-compatible API.
+      </P>
+
+      <H2>D1 Databases</H2>
+      <List items={[
+        'List all databases in your account',
+        'Browse tables and view schemas',
+        'Run SQL queries with the SQL editor',
+        'View and edit table data inline',
+        'Generate dummy data for testing',
+      ]} />
+
+      <H2>KV Namespaces</H2>
+      <List items={[
+        'List all KV namespaces',
+        'Browse keys with prefix search',
+        'View and edit values',
+        'Create and delete keys',
+      ]} />
+
+      <H2>R2 Buckets</H2>
+      <List items={[
+        'List all R2 buckets',
+        'Browse objects with folder navigation',
+        'Preview images, videos, and text files',
+        'Upload and download files',
+        'Delete objects',
+        'View object metadata (size, content-type, etag)',
+      ]} />
+      <Callout type="info">
+        R2 operations use the S3-compatible API with temporary credentials. File previews are proxied
+        through the Vite dev server to avoid CORS issues.
+      </Callout>
+
+      <H2>Queues</H2>
+      <List items={[
+        'List all queues in your account',
+        'View queue configuration and consumer settings',
+      ]} />
+
+      <H2>Not Yet Supported</H2>
+      <List items={[
+        'Durable Objects (requires Workers runtime)',
+        'Network Inspector (local-only feature)',
+        'Tail Logs (use wrangler tail instead)',
+      ]} />
+    </Section>
+  );
+}
+
+function CloudArchitectureSection() {
+  return (
+    <Section id="cloud-architecture">
+      <H1>How Cloud Mode Works</H1>
+      <P>
+        Cloud Mode uses a different data path compared to Local Mode. Instead of accessing bindings
+        through the wrangler runtime, it communicates directly with Cloudflare's APIs.
+      </P>
+
+      <H2>Architecture</H2>
+      <Table
+        headers={['Component', 'Local Mode', 'Cloud Mode']}
+        rows={[
+          ['Data source', 'Wrangler local runtime', 'Cloudflare REST API'],
+          ['Authentication', 'None (local)', 'API Token + Account ID'],
+          ['D1 queries', 'Direct binding access', 'POST /d1/database/{id}/query'],
+          ['KV operations', 'Direct binding access', 'REST API endpoints'],
+          ['R2 operations', 'Direct binding access', 'S3-compatible API with SigV4 signing'],
+          ['Latency', 'Instant (local)', 'Network round-trip to Cloudflare edge'],
+        ]}
+      />
+
+      <H2>R2 Proxy</H2>
+      <P>
+        R2 S3 operations require SigV4 request signing. In the browser, the <Code>Host</Code> header
+        is a forbidden header that can't be set manually, which breaks the signature. Localflare
+        solves this by signing requests server-side through a Vite dev server proxy.
+      </P>
+      <P>
+        The flow is: Browser sends credentials + target URL to <Code>/r2-s3-proxy</Code>,
+        the proxy signs the request with <Code>aws4fetch</Code> and forwards it to R2,
+        then returns the response to the browser.
+      </P>
+
+      <H2>Caching & Performance</H2>
+      <List items={[
+        'API responses are cached with React Query (configurable stale times)',
+        'Bucket and namespace lists are cached for 5 minutes in remote mode',
+        'Object listings are cached for 2 minutes',
+        'R2 temporary credentials are cached for 15 minutes per bucket',
+        'Database ID resolution is deduplicated across concurrent queries',
+      ]} />
+
+      <Callout type="tip">
+        Use the refresh button in each explorer to force-refetch data when needed.
+        Cached data is automatically invalidated after mutations (uploads, deletes, edits).
+      </Callout>
+    </Section>
+  );
+}
+
+// ============================================
 // Troubleshooting Sections
 // ============================================
 
@@ -1480,10 +1743,11 @@ function FAQSection() {
     <Section id="faq">
       <H1>Frequently Asked Questions</H1>
 
-      <H3>Can I use Localflare in production?</H3>
+      <H3>Can I use Localflare with my production Cloudflare account?</H3>
       <P>
-        No. Localflare is designed for local development only. It runs alongside wrangler dev
-        and should not be used in production environments.
+        Yes! Cloud Mode lets you connect to your live Cloudflare account and browse production D1
+        databases, KV namespaces, R2 buckets, and Queues. Toggle between Local and Remote mode
+        in the dashboard header. You'll need a Cloudflare API token with the appropriate permissions.
       </P>
 
       <H3>Does Localflare modify my code?</H3>
