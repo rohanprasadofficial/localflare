@@ -50,7 +50,7 @@ importers:
         version: 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tailwindcss/vite':
         specifier: ^4.0.0
-        version: 4.1.18(vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2))
+        version: 4.1.18(vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2))
       '@tanstack/react-query':
         specifier: ^5.62.8
         version: 5.90.14(react@19.2.3)
@@ -62,7 +62,7 @@ importers:
         version: 19.2.3(@types/react@19.2.7)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2))
+        version: 4.7.0(vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2))
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -101,7 +101,7 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^6.0.6
-        version: 6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2)
+        version: 6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)
       wrangler:
         specifier: ^4.56.0
         version: 4.56.0(@cloudflare/workers-types@4.20251228.0)
@@ -185,7 +185,7 @@ importers:
         version: 1.0.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@cloudflare/kumo':
         specifier: ^1.9.0
-        version: 1.9.0(@phosphor-icons/react@2.1.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 1.9.0(@phosphor-icons/react@2.1.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.6)
       '@codemirror/autocomplete':
         specifier: ^6.20.0
         version: 6.20.0
@@ -248,7 +248,7 @@ importers:
         version: 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@tailwindcss/vite':
         specifier: ^4.1.17
-        version: 4.1.18(vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2))
+        version: 4.1.18(vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2))
       '@tanstack/react-query':
         specifier: ^5.62.8
         version: 5.90.14(react@19.2.3)
@@ -315,13 +315,13 @@ importers:
         version: 2.1.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.7.0(vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2))
+        version: 4.7.0(vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2))
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
       vite:
         specifier: ^6.0.6
-        version: 6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2)
+        version: 6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)
       wrangler:
         specifier: ^3.99.0
         version: 3.114.16(@cloudflare/workers-types@4.20251228.0)
@@ -2068,6 +2068,9 @@ packages:
   '@types/node@22.19.3':
     resolution: {integrity: sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==}
 
+  '@types/node@24.12.0':
+    resolution: {integrity: sha512-GYDxsZi3ChgmckRT9HPU0WEhKLP08ev/Yfcq2AstjrDASOYCSXeyjDsHg4v5t4jOj7cyDX3vmprafKlWIG9MXQ==}
+
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
@@ -3201,6 +3204,9 @@ packages:
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
+  undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+
   undici@5.29.0:
     resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
     engines: {node: '>=14.0'}
@@ -3381,6 +3387,9 @@ packages:
   zod@3.22.3:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
   '@alcalzone/ansi-tokenize@0.2.2':
@@ -3553,7 +3562,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.7
 
-  '@cloudflare/kumo@1.9.0(@phosphor-icons/react@2.1.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@cloudflare/kumo@1.9.0(@phosphor-icons/react@2.1.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.6)':
     dependencies:
       '@base-ui/react': 1.2.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@phosphor-icons/react': 2.1.10(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -3563,6 +3572,8 @@ snapshots:
       react-day-picker: 9.14.0(react@19.2.3)
       react-dom: 19.2.3(react@19.2.3)
       tailwind-merge: 3.4.0
+    optionalDependencies:
+      zod: 4.3.6
     transitivePeerDependencies:
       - '@emotion/is-prop-valid'
       - '@types/react'
@@ -4697,12 +4708,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.1.18
       '@tailwindcss/oxide-win32-x64-msvc': 4.1.18
 
-  '@tailwindcss/vite@4.1.18(vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2))':
+  '@tailwindcss/vite@4.1.18(vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2))':
     dependencies:
       '@tailwindcss/node': 4.1.18
       '@tailwindcss/oxide': 4.1.18
       tailwindcss: 4.1.18
-      vite: 6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2)
+      vite: 6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)
 
   '@tanstack/query-core@5.90.14': {}
 
@@ -4770,6 +4781,11 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/node@24.12.0':
+    dependencies:
+      undici-types: 7.16.0
+    optional: true
+
   '@types/react-dom@19.2.3(@types/react@19.2.7)':
     dependencies:
       '@types/react': 19.2.7
@@ -4785,7 +4801,7 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@vitejs/plugin-react@4.7.0(vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2))':
+  '@vitejs/plugin-react@4.7.0(vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2))':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.5)
@@ -4793,7 +4809,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2)
+      vite: 6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -5904,6 +5920,9 @@ snapshots:
 
   undici-types@6.21.0: {}
 
+  undici-types@7.16.0:
+    optional: true
+
   undici@5.29.0:
     dependencies:
       '@fastify/busboy': 2.1.1
@@ -5964,7 +5983,7 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
-  vite@6.4.1(@types/node@22.19.3)(jiti@2.6.1)(lightningcss@1.30.2):
+  vite@6.4.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.2):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -5973,7 +5992,7 @@ snapshots:
       rollup: 4.54.0
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 22.19.3
+      '@types/node': 24.12.0
       fsevents: 2.3.3
       jiti: 2.6.1
       lightningcss: 1.30.2
@@ -6093,3 +6112,6 @@ snapshots:
       youch-core: 0.3.3
 
   zod@3.22.3: {}
+
+  zod@4.3.6:
+    optional: true
