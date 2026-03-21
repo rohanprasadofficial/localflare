@@ -1,0 +1,5 @@
+{
+  "title": "Durable Objects",
+  "icon": "cloud",
+  "pages": ["index", "overview", "instances", "state"]
+}

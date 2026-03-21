@@ -1,0 +1,49 @@
+---
+title: Configuration
+description: Localflare reads your wrangler.toml automatically.
+icon: settings
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare reads your `wrangler.toml` automatically. No additional configuration is required in most cases.
+
+## Custom Config Path
+
+If your config file is in a different location:
+
+```bash title="Terminal"
+localflare ./path/to/wrangler.toml
+```
+
+## Port Configuration
+
+Change the default worker port:
+
+```bash title="Terminal"
+# Custom worker port
+localflare --port 3000
+```
+
+## Passing Wrangler Options
+
+Use `--` to pass options directly to wrangler:
+
+```bash title="Terminal"
+# Use a specific environment
+localflare -- --env staging
+
+# Set environment variables
+localflare -- --var API_KEY:secret
+
+# Combine options
+localflare --port 9000 -- --env production
+```
+
+## Data Persistence
+
+Localflare uses the standard wrangler state directory at `.wrangler/state/`. Your data persists automatically between sessions.
+
+<Callout type="info">
+The `.wrangler/` directory is typically gitignored. Add it to your `.gitignore` if not already present.
+</Callout>

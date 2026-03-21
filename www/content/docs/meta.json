@@ -1,0 +1,20 @@
+{
+  "title": "Docs",
+  "pages": [
+    "index",
+    "installation",
+    "quick-start",
+    "configuration",
+    "---",
+    "cli",
+    "d1",
+    "kv",
+    "r2",
+    "durable-objects",
+    "queues",
+    "cloud-mode",
+    "---",
+    "advanced",
+    "troubleshooting"
+  ]
+}

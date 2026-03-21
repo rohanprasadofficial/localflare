@@ -1,0 +1,19 @@
+---
+title: State Inspection
+description: Inspect stored state of Durable Object instances.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The state inspector lets you browse the persisted storage of any Durable Object instance.
+
+## State Viewer
+
+- **View key-value pairs** stored by the instance
+- **JSON display** with syntax highlighting for complex values
+- **Storage size** shown per key and total
+- **Edit values** directly from the dashboard
+
+<Callout type="warn">
+Editing Durable Object state directly can cause unexpected behavior if your DO logic depends on specific data shapes. Use caution when modifying values outside of your application code.
+</Callout>

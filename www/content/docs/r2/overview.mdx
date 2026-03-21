@@ -1,0 +1,30 @@
+---
+title: R2 Overview
+description: Visual file manager for working with R2 buckets locally.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare provides a visual file manager for interacting with your R2 buckets during local development. Browse objects, upload files, and preview content without leaving the dashboard.
+
+## Features
+
+- **File Browser** -- navigate bucket contents with a familiar file-system UI
+- **Drag-and-Drop Upload** -- drop files directly into the browser to upload
+- **Download** -- download individual objects or bulk export
+- **Preview** -- inline preview for images, text, JSON, and other supported formats
+- **Metadata** -- inspect object metadata including size, content type, and etag
+
+## Binding Configuration
+
+Localflare reads your R2 bindings from `wrangler.toml` automatically. Make sure your R2 bucket is configured:
+
+```toml title="wrangler.toml"
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "my-bucket"
+```
+
+<Callout type="info">
+Run `wrangler dev` before starting Localflare so the local R2 bucket is initialized.
+</Callout>

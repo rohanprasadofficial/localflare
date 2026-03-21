@@ -1,0 +1,49 @@
+---
+title: FAQ
+description: Frequently asked questions about Localflare.
+---
+
+### Can I use Localflare with my production Cloudflare account?
+
+Yes. Cloud Mode lets you connect directly to your production Cloudflare account using an API token. You can browse and manage live D1 databases, KV namespaces, R2 buckets, and Queues from the same dashboard. See the [Cloud Mode](/docs/cloud-mode) section for setup instructions.
+
+### Does Localflare modify my code?
+
+No. Localflare runs as a sidecar alongside your development server. It never modifies your source code, wrangler configuration, or build output. It only reads your `wrangler.toml` to discover bindings.
+
+### Why can I send queue messages?
+
+Localflare connects to wrangler's local miniflare runtime, which includes a fully functional queue implementation. When you send a message through the dashboard, it is delivered to your Worker's queue handler and actually processed — just like it would be in production. This makes it easy to test queue consumers during development.
+
+### Does it work with any framework?
+
+Localflare works with any framework that uses `wrangler.toml` for Cloudflare Workers bindings. This includes standard Workers, Hono, Remix, Astro, SvelteKit, and more. For frameworks like Next.js (via OpenNext) or Nuxt that manage their own wrangler process, use Attach Mode. See [Requirements & Compatibility](/docs/advanced/requirements) for the full list.
+
+### What is attach mode?
+
+Attach Mode lets Localflare connect to an already-running wrangler process instead of starting a new one. This is useful when your framework manages its own dev server and wrangler process. Run your dev server first, then run `npx localflare attach` to connect.
+
+### Why doesn't Localflare work with my project?
+
+The most common reasons are: missing `wrangler.toml` file, no bindings configured, or the project uses Cloudflare Pages Functions (legacy). Make sure `npx wrangler dev` works before trying Localflare. See [Requirements & Compatibility](/docs/advanced/requirements) for details.
+
+### How do I update Localflare?
+
+If installed globally, update with your package manager:
+
+```bash title="Terminal"
+# npm
+npm update -g localflare
+
+# pnpm
+pnpm update -g localflare
+
+# yarn
+yarn global upgrade localflare
+```
+
+If using npx, you always get the latest version automatically.
+
+### Where can I report issues?
+
+Open an issue on the [Localflare GitHub repository](https://github.com/nicholascelestin/localflare). Include your Node.js version, wrangler version, operating system, and the error message or unexpected behavior you encountered.

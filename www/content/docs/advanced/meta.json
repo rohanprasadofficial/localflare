@@ -1,0 +1,5 @@
+{
+  "title": "Advanced",
+  "icon": "wrench",
+  "pages": ["index", "requirements", "architecture", "bindings", "persistence"]
+}

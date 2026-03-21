@@ -1,0 +1,34 @@
+---
+title: Durable Objects Overview
+description: Inspect active DO instances and their state.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare lets you inspect your Durable Object instances and their persisted state during local development. See which instances are active, browse their stored data, and send test messages.
+
+## Features
+
+- **List instances** -- see all active Durable Object instances for each class
+- **View IDs and names** -- inspect unique hex IDs and optional string names
+- **Inspect state** -- browse the key-value pairs stored by each instance
+- **Send test messages** -- dispatch messages to instances for debugging
+
+## Binding Configuration
+
+Localflare reads your Durable Object bindings from `wrangler.toml` automatically:
+
+```toml title="wrangler.toml"
+[durable_objects]
+bindings = [
+  { name = "MY_DO", class_name = "MyDurableObject" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["MyDurableObject"]
+```
+
+<Callout type="info">
+Run `wrangler dev` before starting Localflare so your Durable Object classes are registered.
+</Callout>

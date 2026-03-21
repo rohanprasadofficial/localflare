@@ -1,0 +1,5 @@
+{
+  "title": "Troubleshooting",
+  "icon": "alert-triangle",
+  "pages": ["index", "browser-issues", "common-issues", "faq"]
+}

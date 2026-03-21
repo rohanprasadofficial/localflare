@@ -1,0 +1,27 @@
+---
+title: CLI Examples
+description: Common usage examples for the Localflare CLI.
+---
+
+```bash title="Basic usage"
+# Start with defaults
+localflare
+
+# Custom config path
+localflare ./config/wrangler.toml
+
+# Custom port
+localflare --port 3000
+
+# Verbose output
+localflare -v
+
+# Don't open browser
+localflare --no-open
+
+# Use staging environment
+localflare -- --env staging
+
+# Combine options
+localflare --port 9000 --no-open -- --env production
+```

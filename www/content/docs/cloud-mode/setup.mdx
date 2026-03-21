@@ -1,0 +1,102 @@
+---
+title: Setup & Authentication
+description: Configure Cloud Mode with API token and Account ID.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+## Creating an API Token
+
+<Steps>
+<Step>
+### Go to the Cloudflare Dashboard
+
+Navigate to [dash.cloudflare.com](https://dash.cloudflare.com) and open **My Profile > API Tokens**.
+</Step>
+<Step>
+### Create a Custom Token
+
+Click **Create Token**, then select **Create Custom Token** at the bottom of the page.
+</Step>
+<Step>
+### Add Permissions
+
+Add the following permissions to the token. See the Required Permissions table below for details.
+</Step>
+<Step>
+### Set Account Scope
+
+Under **Account Resources**, select your account or choose **All accounts** if you want to access bindings across multiple accounts.
+</Step>
+<Step>
+### Create and Copy
+
+Click **Continue to summary**, then **Create Token**. Copy the token immediately — it won't be shown again.
+</Step>
+</Steps>
+
+<Callout type="warn">
+Use a **User API Token**, not an Account API Token. Account API Tokens are not supported by the Cloudflare REST API endpoints that Localflare uses.
+</Callout>
+
+## Required Permissions
+
+| Permission | Access Level | Used For |
+| --- | --- | --- |
+| D1 | Edit | Query databases, browse tables, edit data |
+| Workers KV Storage | Edit | List namespaces, read/write keys |
+| Workers R2 Storage | Edit | List buckets, upload/download objects |
+| Queues | Edit | List queues, view configuration |
+
+## Connecting in the Dashboard
+
+<Steps>
+<Step>
+### Open Cloud Mode
+
+Click the **Local/Remote** toggle in the Localflare sidebar to switch to Cloud Mode.
+</Step>
+<Step>
+### Enter Credentials
+
+Paste your API Token and Account ID into the connection form.
+</Step>
+<Step>
+### Connect
+
+Click **Connect**. Localflare will verify your token and load your account's bindings.
+</Step>
+</Steps>
+
+## Finding Your Account ID
+
+Your Account ID is displayed on the right side of your Cloudflare dashboard overview page. You can also find it using wrangler:
+
+```bash title="Terminal"
+npx wrangler whoami
+```
+
+The Account ID is a 32-character hexadecimal string, for example: `a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4`.
+
+## R2 Access Keys (Optional)
+
+R2 in Cloud Mode uses the S3-compatible API, which requires separate access keys.
+
+<Steps>
+<Step>
+### Navigate to R2 Settings
+
+In the Cloudflare dashboard, go to **R2 > Manage R2 API Tokens**.
+</Step>
+<Step>
+### Create an API Token
+
+Click **Create API token**, give it a name, and select **Object Read & Write** permissions for the buckets you want to access.
+</Step>
+<Step>
+### Copy the Keys
+
+Copy the **Access Key ID** and **Secret Access Key**. Enter these in the Localflare Cloud Mode settings under the R2 section.
+</Step>
+</Steps>

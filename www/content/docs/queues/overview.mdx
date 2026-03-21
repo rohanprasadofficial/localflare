@@ -1,0 +1,34 @@
+---
+title: Queues Overview
+description: Monitor queue activity and send test messages.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare provides a dashboard for monitoring your Cloudflare Queues during local development. View bindings, send test messages, and watch consumer processing in real time.
+
+## Features
+
+- **View bindings** -- see all producer and consumer queue bindings
+- **Send test messages** -- publish messages to any queue for testing
+- **Monitor processing** -- watch messages flow through the queue
+- **Consumer processing** -- observe how your consumer handles incoming messages
+
+## Binding Configuration
+
+Localflare reads your queue bindings from `wrangler.toml` automatically:
+
+```toml title="wrangler.toml"
+[[queues.producers]]
+queue = "my-queue"
+binding = "MY_QUEUE"
+
+[[queues.consumers]]
+queue = "my-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+```
+
+<Callout type="info">
+Localflare's sidecar architecture enables real message processing through your consumer, so you can test the full queue lifecycle locally.
+</Callout>

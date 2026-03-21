@@ -1,0 +1,26 @@
+---
+title: Getting Started
+description: Get started with Localflare - the local development dashboard for Cloudflare Workers.
+icon: rocket
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare is a local development dashboard for Cloudflare Workers. Visualize and interact with your D1 databases, KV namespaces, R2 buckets, Durable Objects, and Queues—all locally.
+
+### What you can do
+
+- Browse and edit D1 database tables with a full SQL editor
+- View, edit, and delete KV key-value pairs
+- Upload, download, and manage R2 objects
+- Inspect Durable Object instances and their state
+- Send test messages to Queues and monitor processing
+- Zero configuration—reads your wrangler.toml automatically
+
+<Callout type="info">
+**Requirement:** Localflare works with Cloudflare Worker projects that use `wrangler dev` for local development. It runs alongside wrangler to access your bindings.
+</Callout>
+
+<Callout>
+Localflare uses a sidecar architecture, running alongside your worker with shared bindings for full compatibility.
+</Callout>

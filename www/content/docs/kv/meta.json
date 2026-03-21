@@ -1,0 +1,5 @@
+{
+  "title": "KV Storage",
+  "icon": "layers",
+  "pages": ["index", "overview", "browser", "operations"]
+}

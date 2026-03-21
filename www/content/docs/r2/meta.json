@@ -1,0 +1,5 @@
+{
+  "title": "R2 Buckets",
+  "icon": "folder-open",
+  "pages": ["index", "overview", "file-manager", "uploads"]
+}

@@ -1,0 +1,75 @@
+---
+title: Architecture
+description: How Localflare's sidecar architecture works.
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Localflare runs as a sidecar alongside your Cloudflare Worker. It intercepts binding calls through wrangler's local development APIs and provides a visual dashboard for interacting with your data.
+
+## Architecture Diagram
+
+```
+┌──────────────────────────────────────────────────┐
+│                    Browser                        │
+│            studio.localflare.dev                  │
+└──────────────────┬───────────────────────────────┘
+                   │ HTTPS
+                   ▼
+┌──────────────────────────────────────────────────┐
+│              Localflare Server                    │
+│  ┌────────────┐  ┌───────────┐  ┌─────────────┐ │
+│  │  API Layer │  │  R2 Proxy │  │  Dashboard   │ │
+│  └─────┬──────┘  └─────┬─────┘  └─────────────┘ │
+│        │               │                          │
+│        ▼               ▼                          │
+│  ┌──────────────────────────────────────────┐    │
+│  │         Binding Discovery Engine          │    │
+│  └──────────────────┬───────────────────────┘    │
+└─────────────────────┼────────────────────────────┘
+                      │ HTTP (localhost)
+                      ▼
+┌──────────────────────────────────────────────────┐
+│              Wrangler Dev Server                  │
+│  ┌──────┐  ┌────┐  ┌────┐  ┌────────┐  ┌─────┐ │
+│  │  D1  │  │ KV │  │ R2 │  │ Queues │  │ DO  │ │
+│  └──────┘  └────┘  └────┘  └────────┘  └─────┘ │
+└──────────────────────────────────────────────────┘
+```
+
+## Key Benefits
+
+- **Zero configuration** — Localflare reads your `wrangler.toml` and discovers bindings automatically
+- **Non-invasive** — No changes to your application code or wrangler configuration
+- **Real-time** — Changes made in the dashboard are immediately reflected in your Worker
+- **Sidecar model** — Localflare runs alongside wrangler, not inside it, so it can't crash your dev server
+
+## How It Works
+
+<Steps>
+<Step>
+### Binding Discovery
+
+Localflare reads your `wrangler.toml` to discover all configured bindings (D1, KV, R2, Queues, Durable Objects, Service Bindings).
+</Step>
+<Step>
+### Wrangler Process Management
+
+In Default Mode, Localflare starts a wrangler dev process and manages its lifecycle. In Attach Mode, it connects to an existing process.
+</Step>
+<Step>
+### API Proxying
+
+Localflare exposes API endpoints at `/__localflare/*` that proxy requests to wrangler's internal APIs for each binding type.
+</Step>
+<Step>
+### Dashboard Serving
+
+The dashboard is served from `studio.localflare.dev` and communicates with the local API endpoints to display and manipulate data.
+</Step>
+<Step>
+### Network Interception
+
+The Network Inspector captures HTTP traffic flowing through the Worker, giving you visibility into requests and responses in real-time.
+</Step>
+</Steps>

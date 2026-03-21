@@ -1,0 +1,5 @@
+{
+  "title": "Queues",
+  "icon": "message-square",
+  "pages": ["index", "overview", "messages", "testing"]
+}

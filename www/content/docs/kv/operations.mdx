@@ -1,0 +1,51 @@
+---
+title: KV Operations
+description: Create, edit, and delete KV keys.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Perform all key-value operations directly from the Localflare dashboard.
+
+## Create Key
+
+<Steps>
+  <Step>
+    ### Open the create dialog
+
+    Click the **Add Key** button in the key browser toolbar.
+  </Step>
+  <Step>
+    ### Enter the key name
+
+    Type a unique key name in the **Key** field.
+  </Step>
+  <Step>
+    ### Set the value
+
+    Enter the value as plain text or JSON in the **Value** field.
+  </Step>
+  <Step>
+    ### Set TTL (optional)
+
+    Optionally set a time-to-live in seconds. Leave blank for no expiration.
+  </Step>
+  <Step>
+    ### Save
+
+    Click **Create** to store the key-value pair.
+  </Step>
+</Steps>
+
+## Edit Key
+
+Click any key in the browser to open the detail view. Modify the value or metadata, then click **Save** to persist the changes.
+
+## Delete Keys
+
+Select one or more keys using the checkboxes, then click **Delete**. You can also delete a single key from its detail view.
+
+<Callout type="info">
+Store structured data as JSON strings for easy inspection and editing in the dashboard.
+</Callout>
