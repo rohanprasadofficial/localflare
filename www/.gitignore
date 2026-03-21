@@ -9,8 +9,11 @@ lerna-debug.log*
 
 node_modules
 dist
+build
 dist-ssr
 *.local
+.source
+.react-router
 
 # Editor directories and files
 .vscode/*
