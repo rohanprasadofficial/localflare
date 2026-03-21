@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "fumadocs-ui/css/solar.css";
+@import "fumadocs-ui/css/preset.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-fd-primary: #EF5F00;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-background: #FEFCFB;
+}
+
+.dark {
+  --color-fd-primary: #FF801F;
+  --color-fd-primary-foreground: #ffffff;
+}
+
+/* Active sidebar items in dark mode */
+.dark #nd-sidebar [data-active="true"] {
+  background-color: #1E160F;
+  color: #FF801F;
+}
+
+@theme inline {
+    --font-sans: 'Geist Variable', sans-serif;
+    --font-mono: 'Geist Mono Variable', monospace;
+}
+
+#nd-docs-layout #nd-page:before {
+  box-shadow: none;
+  border-color: hsl(0 0% 88%);
+  background-color: #ffffff;
+}
+
+.dark #nd-docs-layout #nd-page:before {
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-fd-border);
+  background-color: var(--color-fd-article);
+}
+
+@layer base {
+  * {
+    @apply border-fd-border;
+  }
+  body {
+    @apply font-sans;
+  }
+  ::selection {
+    background-color: var(--color-fd-foreground);
+    color: var(--color-fd-background);
+  }
+  figure.shiki ::selection {
+    background-color: rgba(255, 255, 255, 0.05);
+    -webkit-text-fill-color: currentColor;
+    color: currentColor;
+  }
+  code::selection,
+  code *::selection {
+    background-color: rgba(255, 255, 255, 0.15);
+    -webkit-text-fill-color: currentColor;
+    color: currentColor;
+  }
+  html:not(.dark) code::selection,
+  html:not(.dark) code *::selection {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Landing page animations */
+@keyframes dash {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.animate-dash {
+  animation: dash 3s linear infinite;
+}
+
+.bg-gradient-radial {
+  background: radial-gradient(var(--tw-gradient-stops));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Active sidebar items in light mode */
+html:not(.dark) #nd-sidebar [data-active="true"] {
+  background-color: #FFF7ED;
+  color: #EF5F00;
+}
+
+/* White sidebar in light mode - only when floating (collapsed) */
+html:not(.dark) #nd-sidebar[data-collapsed='true'] {
+  background-color: #ffffff;
+}
+
+/* Light mode: page action buttons background */
+html:not(.dark) #nd-page .bg-fd-secondary {
+  background-color: #FEFCFB;
+}
+
+/* Light mode: callout background, no shadow */
+html:not(.dark) [style*="--callout-color"] {
+  background-color: #FEFCFB;
+  box-shadow: none;
+}
+
+/* Light mode: table background */
+html:not(.dark) .prose table {
+  background-color: #FEFCFB;
+}
+
+/* Code block overrides for vesper (dark theme in both modes) */
+html:not(.dark) figure.shiki {
+  border-color: rgba(255, 255, 255, 0.1);
+
+  & > div:first-child {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  & button:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
