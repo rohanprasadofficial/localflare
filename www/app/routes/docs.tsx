@@ -32,7 +32,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { source } = await import("~/lib/source");
 
   const slug = params["*"] || "";
-  const slugArray = slug ? slug.split("/") : [];
+  const slugArray = slug ? slug.split("/").filter(Boolean) : [];
   const page = source.getPage(slugArray);
   if (!page) {
     throw new Response("Not Found", { status: 404 });
