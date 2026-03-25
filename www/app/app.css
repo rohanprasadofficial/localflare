@@ -37,19 +37,19 @@
   * {
     @apply border-fd-border;
   }
+
   body {
     @apply font-sans;
   }
+
   html {
     @apply scroll-smooth selection:bg-fd-foreground selection:text-fd-background;
   }
+
   img, svg, iframe {
     @apply select-none;
   }
-  /* ::selection {
-    background-color: var(--color-fd-foreground);
-    color: var(--color-fd-background);
-  } */
+
   figure.shiki ::selection {
     background-color: rgba(255, 255, 255, 0.05);
     -webkit-text-fill-color: currentColor;
@@ -57,26 +57,14 @@
   }
 
   code {
-    @apply selection:bg-[#00000026] dark:selection:bg-[#ffffff26] selection:text-current
+    @apply selection:bg-[#00000026] dark:selection:bg-[#ffffff26] selection:text-current;
   }
-
-  /* code::selection,
-  code *::selection {
-    background-color: #ffffff26;
-    -webkit-text-fill-color: currentColor;
-    color: currentColor;
-  }
-  html:not(.dark) code::selection,
-  html:not(.dark) code *::selection {
-    background-color: #00000026;
-  } */
 }
 
 /* ── Fumadocs layout overrides ──────────────── */
 
 #nd-docs-layout #nd-page:before {
   @apply shadow-none bg-white border-[#E0E0E0];
-  /* border-color: #e0e0e0; */
 }
 
 /* Light mode */
@@ -117,6 +105,7 @@ html:not(.dark) {
   }
 }
 
+/* Dark mode */
 .dark {
   --color-fd-primary: #FF801F;
   --color-fd-primary-foreground: #ffffff;
@@ -128,7 +117,5 @@ html:not(.dark) {
 
   & #nd-docs-layout #nd-page:before {
     @apply shadow-xl border-fd-border bg-fd-article;
-    /* border-color: var(--color-fd-border);
-    background-color: var(--color-fd-article); */
   }
 }
