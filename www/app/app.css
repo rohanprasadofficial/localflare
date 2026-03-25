@@ -11,34 +11,26 @@
   --color-fd-primary: #EF5F00;
   --color-fd-primary-foreground: #ffffff;
   --color-fd-background: #FEFCFB;
-}
-
-.dark {
-  --color-fd-primary: #FF801F;
-  --color-fd-primary-foreground: #ffffff;
-}
-
-/* Active sidebar items in dark mode */
-.dark #nd-sidebar [data-active="true"] {
-  background-color: #1E160F;
-  color: #FF801F;
+  --animate-dash: dash 3s linear infinite;
 }
 
 @theme inline {
-    --font-sans: 'Geist Variable', sans-serif;
-    --font-mono: 'Geist Mono Variable', monospace;
+  --font-sans: 'Geist Variable', sans-serif;
+  --font-mono: 'Geist Mono Variable', monospace;
 }
 
-#nd-docs-layout #nd-page:before {
-  box-shadow: none;
-  border-color: hsl(0 0% 88%);
-  background-color: #ffffff;
+@keyframes dash {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
 }
 
-.dark #nd-docs-layout #nd-page:before {
-  box-shadow: var(--shadow-xl);
-  border-color: var(--color-fd-border);
-  background-color: var(--color-fd-article);
+@utility bg-gradient-radial {
+  background: radial-gradient(var(--tw-gradient-stops));
+}
+
+@utility bg-dot-pattern {
+  background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 @layer base {
@@ -48,87 +40,95 @@
   body {
     @apply font-sans;
   }
-  ::selection {
+  html {
+    @apply scroll-smooth selection:bg-fd-foreground selection:text-fd-background;
+  }
+  img, svg, iframe {
+    @apply select-none;
+  }
+  /* ::selection {
     background-color: var(--color-fd-foreground);
     color: var(--color-fd-background);
-  }
+  } */
   figure.shiki ::selection {
     background-color: rgba(255, 255, 255, 0.05);
     -webkit-text-fill-color: currentColor;
     color: currentColor;
   }
-  code::selection,
+
+  code {
+    @apply selection:bg-[#00000026] dark:selection:bg-[#ffffff26] selection:text-current
+  }
+
+  /* code::selection,
   code *::selection {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: #ffffff26;
     -webkit-text-fill-color: currentColor;
     color: currentColor;
   }
   html:not(.dark) code::selection,
   html:not(.dark) code *::selection {
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: #00000026;
+  } */
+}
+
+/* ── Fumadocs layout overrides ──────────────── */
+
+#nd-docs-layout #nd-page:before {
+  @apply shadow-none bg-white border-[#E0E0E0];
+  /* border-color: #e0e0e0; */
+}
+
+/* Light mode */
+html:not(.dark) {
+  & #nd-sidebar [data-active="true"] {
+    background-color: #FFF7ED;
+    color: #EF5F00;
+  }
+
+  & #nd-sidebar[data-collapsed='true'] {
+    @apply bg-white;
+  }
+
+  & #nd-page .bg-fd-secondary {
+    @apply bg-fd-background;
+  }
+
+  & [style*="--callout-color"] {
+    @apply bg-fd-background shadow-none;
+  }
+
+  & .prose table {
+    @apply bg-fd-background;
+  }
+
+  /* Code block overrides for vesper (dark theme in both modes) */
+  & figure.shiki {
+    border-color: rgba(255, 255, 255, 0.1);
+
+    & > div:first-child {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    & button:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
   }
 }
 
-/* Landing page animations */
-@keyframes dash {
-  0% { stroke-dashoffset: 100; }
-  100% { stroke-dashoffset: 0; }
-}
+.dark {
+  --color-fd-primary: #FF801F;
+  --color-fd-primary-foreground: #ffffff;
 
-.animate-dash {
-  animation: dash 3s linear infinite;
-}
-
-.bg-gradient-radial {
-  background: radial-gradient(var(--tw-gradient-stops));
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-.bg-dot-pattern {
-  background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
-  background-size: 32px 32px;
-}
-
-/* Active sidebar items in light mode */
-html:not(.dark) #nd-sidebar [data-active="true"] {
-  background-color: #FFF7ED;
-  color: #EF5F00;
-}
-
-/* White sidebar in light mode - only when floating (collapsed) */
-html:not(.dark) #nd-sidebar[data-collapsed='true'] {
-  background-color: #ffffff;
-}
-
-/* Light mode: page action buttons background */
-html:not(.dark) #nd-page .bg-fd-secondary {
-  background-color: #FEFCFB;
-}
-
-/* Light mode: callout background, no shadow */
-html:not(.dark) [style*="--callout-color"] {
-  background-color: #FEFCFB;
-  box-shadow: none;
-}
-
-/* Light mode: table background */
-html:not(.dark) .prose table {
-  background-color: #FEFCFB;
-}
-
-/* Code block overrides for vesper (dark theme in both modes) */
-html:not(.dark) figure.shiki {
-  border-color: rgba(255, 255, 255, 0.1);
-
-  & > div:first-child {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
+  & #nd-sidebar [data-active="true"] {
+    background-color: #1E160F;
+    color: #FF801F;
   }
 
-  & button:hover {
-    color: rgba(255, 255, 255, 0.9);
+  & #nd-docs-layout #nd-page:before {
+    @apply shadow-xl border-fd-border bg-fd-article;
+    /* border-color: var(--color-fd-border);
+    background-color: var(--color-fd-article); */
   }
 }
