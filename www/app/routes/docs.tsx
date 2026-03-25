@@ -10,6 +10,8 @@ import {
 import { useFumadocsLoader } from "fumadocs-core/source/client";
 import { baseOptions } from "~/lib/layout.shared";
 import { getMDXComponents } from "~/components/mdx";
+import type { MDXContent } from "mdx/types";
+import type { TableOfContents } from "fumadocs-core/toc";
 import type { Route } from "./+types/docs";
 
 // Eager-load MDX modules (works on both server and client)
@@ -18,12 +20,12 @@ const mdxModules = import.meta.glob("../../content/docs/**/*.mdx", {
   query: { collection: "docs" },
 });
 
-const mdxByPath: Record<string, React.ComponentType> = {};
+const mdxByPath: Record<string, MDXContent> = {};
 for (const [key, mod] of Object.entries(mdxModules)) {
   const normalized = key.replace(/^.*?content\/docs\//, "");
   const m = mod as Record<string, unknown>;
   if (typeof m.default === "function") {
-    mdxByPath[normalized] = m.default as React.ComponentType;
+    mdxByPath[normalized] = m.default as MDXContent;
   }
 }
 
@@ -55,15 +57,12 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function Docs({ loaderData }: Route.ComponentProps) {
   // useFumadocsLoader deserializes the page tree (HTML strings → React elements)
-  const { tree, page } = useFumadocsLoader(loaderData) as {
-    tree: ReturnType<typeof import("fumadocs-core/source").loader>["pageTree"];
-    page: typeof loaderData.page;
-  };
+  const { tree, page } = useFumadocsLoader(loaderData);
   const MDXContent = mdxByPath[page.path];
 
   return (
     <DocsLayout tree={tree} {...baseOptions}>
-      <DocsPage toc={page.toc} full={page.full}>
+      <DocsPage toc={page.toc as TableOfContents} full={page.full}>
         <DocsTitle className="mb-0">{page.title}</DocsTitle>
         <DocsDescription className="mb-0">{page.description}</DocsDescription>
         <div className="flex flex-row flex-wrap gap-2 items-center border-b pb-6">
