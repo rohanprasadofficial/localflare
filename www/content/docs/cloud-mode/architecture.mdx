@@ -1,0 +1,40 @@
+---
+title: How Cloud Mode Works
+description: Architecture and data flow in Cloud Mode.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Architecture
+
+Cloud Mode bypasses the local wrangler process entirely and communicates directly with Cloudflare's APIs from the dashboard.
+
+| Component | Local Mode | Cloud Mode |
+| --- | --- | --- |
+| D1 | Queries local SQLite via wrangler | Cloudflare REST API (`/client/v4/accounts/.../d1`) |
+| KV | Reads local KV store via wrangler | Cloudflare REST API (`/client/v4/accounts/.../storage/kv`) |
+| R2 | Reads local R2 store via wrangler | S3-compatible API via local proxy |
+| Queues | Sends to local miniflare queue | Cloudflare REST API (`/client/v4/accounts/.../queues`) |
+| Auth | None required | API Token + Account ID |
+
+## R2 Proxy
+
+R2 in Cloud Mode uses Cloudflare's S3-compatible API, which requires SigV4 request signing. Because browsers cannot sign S3 requests directly (they don't have access to the signing libraries and would expose your secret key), Localflare runs a lightweight local proxy that:
+
+1. Receives requests from the dashboard
+2. Signs them with your R2 access credentials using AWS SigV4
+3. Forwards the signed requests to the R2 S3 endpoint
+4. Returns the response to the dashboard
+
+This keeps your secret access key out of the browser while enabling full S3 API compatibility.
+
+## Caching & Performance
+
+- **Binding lists are cached** — Account bindings (databases, namespaces, buckets, queues) are fetched once and cached until you refresh
+- **Query results are not cached** — D1 queries and KV reads always hit the live API to ensure fresh data
+- **Stale time configuration** — API responses use a short stale time to balance freshness with performance
+- **Parallel fetching** — Multiple bindings are fetched concurrently to minimize load time
+
+<Callout type="info">
+Use the refresh button in the dashboard header to re-fetch binding lists after making changes in the Cloudflare dashboard.
+</Callout>

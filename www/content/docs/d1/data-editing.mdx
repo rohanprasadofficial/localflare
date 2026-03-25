@@ -1,0 +1,41 @@
+---
+title: Data Editing
+description: Edit D1 data directly in the dashboard.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Localflare lets you edit data in your D1 tables directly from the dashboard without writing SQL.
+
+## Inline Editing
+
+<Steps>
+  <Step>
+    ### Click a cell
+
+    Click any cell in the table browser to enter edit mode.
+  </Step>
+  <Step>
+    ### Make changes
+
+    Modify the value in the cell. The cell highlights to indicate unsaved changes.
+  </Step>
+  <Step>
+    ### Press Enter
+
+    Press **Enter** to save the change or **Escape** to discard it.
+  </Step>
+</Steps>
+
+## Adding Rows
+
+Click the **Add Row** button at the bottom of the table to insert a new row. Fill in the values for each column and confirm to save.
+
+## Deleting Rows
+
+Select one or more rows using the checkboxes, then click **Delete** to remove them from the table.
+
+<Callout type="warn">
+Deletions are permanent and cannot be undone. Make sure you have a backup if you need to preserve data.
+</Callout>

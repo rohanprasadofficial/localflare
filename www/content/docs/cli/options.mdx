@@ -1,0 +1,32 @@
+---
+title: CLI Options
+description: All available command-line options for Localflare.
+---
+
+## Options
+
+| Option | Alias | Description | Default |
+|---|---|---|---|
+| `--port` | `-p` | Port for the Localflare server | `8787` |
+| `--verbose` | `-v` | Enable verbose logging output | — |
+| `--no-open` | — | Don't open the dashboard in the browser | — |
+| `--no-tui` | — | Disable the terminal UI | — |
+| `--dev` | — | Connect the dashboard to the local dev server | — |
+| `--persist-to` | — | Custom path for the `.wrangler/state` directory | — |
+| `--help` | `-h` | Show help information | — |
+| `--version` | — | Show the installed version | — |
+
+## Passing Wrangler Options
+
+Use `--` to forward options directly to `wrangler dev`:
+
+```bash title="Terminal"
+# Pass an environment flag
+localflare -- --env staging
+
+# Pass multiple wrangler options
+localflare -- --env production --local
+
+# Combine Localflare and wrangler options
+localflare --port 9000 -- --env staging
+```

@@ -1,0 +1,34 @@
+---
+title: Common Issues
+description: Solutions for common Localflare problems.
+---
+
+### Cannot find wrangler.toml
+
+- Make sure you are running `localflare` from the directory containing your `wrangler.toml` file
+- Check that the file is named `wrangler.toml` (not `wrangler.json` or `wrangler.jsonc` — these are not supported yet)
+- If your `wrangler.toml` is in a subdirectory, navigate to that directory first or use `--config` to specify the path
+- Verify the file is not empty and contains valid TOML syntax
+
+### Port already in use
+
+- Localflare's API server defaults to the same port as wrangler (usually 8787). If another process is using that port, you'll see a conflict
+- Stop any other `wrangler dev` or development server processes running on the same port
+- Use `--port` to specify a different port: `npx localflare --port 8788`
+- On macOS/Linux, find the process using the port: `lsof -i :8787`
+- On Windows, find the process using the port: `netstat -ano | findstr :8787`
+
+### Binding not found
+
+- Verify the binding is defined in your `wrangler.toml` file
+- Check for typos in the binding name or configuration
+- Make sure you are using the correct binding syntax (e.g., `[[d1_databases]]` not `[d1_databases]`)
+- Restart Localflare after modifying `wrangler.toml` — binding changes require a restart
+
+### Wrangler exited with error
+
+- Run `npx wrangler dev` separately to check for errors in your Worker code
+- Make sure your Node.js version is 18.0.0 or higher: `node --version`
+- Update wrangler to the latest version: `npm install -D wrangler@latest`
+- Check for syntax errors in `wrangler.toml` using `npx wrangler deploy --dry-run`
+- If using Attach Mode, make sure the wrangler process is running before starting Localflare

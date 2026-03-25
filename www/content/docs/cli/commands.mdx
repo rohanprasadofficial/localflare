@@ -1,0 +1,33 @@
+---
+title: Commands
+description: Available Localflare CLI commands.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## localflare (default)
+
+Start the Localflare development server with your worker.
+
+```bash title="Terminal"
+localflare [configPath] [options] [-- wrangler-options]
+```
+
+### Arguments
+
+| Argument | Description |
+|---|---|
+| `configPath` | Path to wrangler.toml (optional, auto-detected) |
+| `-- wrangler-options` | Options to pass directly to wrangler |
+
+<Callout type="info">
+This is the recommended way to use Localflare. It runs `wrangler dev` under the hood.
+</Callout>
+
+## localflare attach
+
+Run Localflare API alongside an existing dev server. See [Attach Mode](/docs/cli/attach-mode) for details.
+
+```bash title="Terminal"
+localflare attach [configPath] [options]
+```

@@ -1,0 +1,67 @@
+---
+title: Data Persistence
+description: How Localflare persists data using wrangler's state directory.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare uses wrangler's built-in persistence layer to store all local data. This means your D1 databases, KV keys, R2 objects, and Durable Object state persist across restarts.
+
+## Storage Location
+
+All local data is stored in the `.wrangler/` directory inside your project:
+
+```
+my-worker/
+├── .wrangler/
+│   └── state/
+│       ├── v3/
+│       │   ├── d1/
+│       │   │   └── miniflare-D1DatabaseObject/
+│       │   ├── kv/
+│       │   │   └── miniflare-KVNamespaceObject/
+│       │   ├── r2/
+│       │   │   └── miniflare-R2BucketObject/
+│       │   └── do/
+│       │       └── miniflare-DurableObjectObject/
+│       └── ...
+├── wrangler.toml
+└── src/
+```
+
+## Custom Persistence Directory
+
+You can specify a custom persistence directory using the `--persist-to` flag:
+
+```bash title="Terminal"
+npx localflare --persist-to ./my-data
+```
+
+Or in attach mode, make sure your wrangler process uses the same flag:
+
+```bash title="Terminal"
+npx wrangler dev --persist-to ./my-data
+npx localflare attach
+```
+
+## Sharing Data with wrangler dev
+
+Since Localflare uses the same persistence directory as `wrangler dev`, any data you create in Localflare is immediately available to your Worker, and vice versa. This means:
+
+- Rows inserted via Localflare's D1 editor appear in your Worker's queries
+- Files uploaded via Localflare's R2 browser are accessible through your Worker's R2 binding
+- KV keys written by your Worker show up in Localflare's KV browser
+
+## Clearing Data
+
+To reset all local data, delete the `.wrangler/state` directory:
+
+```bash title="Terminal"
+rm -rf .wrangler/state
+```
+
+Then restart Localflare. Your bindings will be re-initialized with empty state.
+
+<Callout type="info">
+The `.wrangler/` directory is automatically added to `.gitignore` by wrangler. Your local development data should never be committed to version control.
+</Callout>

@@ -1,0 +1,5 @@
+{
+  "title": "D1 Database",
+  "icon": "database",
+  "pages": ["index", "overview", "sql-editor", "table-browser", "data-editing"]
+}

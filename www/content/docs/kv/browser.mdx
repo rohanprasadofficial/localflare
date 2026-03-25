@@ -1,0 +1,21 @@
+---
+title: Key Browser
+description: Browse all keys in your KV namespace with values and metadata.
+---
+
+The key browser lets you explore all keys stored in a KV namespace, inspect their values, and view metadata.
+
+## Key List
+
+Each key displays the following information:
+
+| Column | Description |
+| --- | --- |
+| Key | The key name |
+| Value Preview | A truncated preview of the stored value |
+| Expiration | TTL expiration time, if set |
+| Metadata | Associated metadata object, if any |
+
+## Searching Keys
+
+Use the search bar to filter keys by prefix. KV supports prefix-based matching, so entering `user:` will show all keys that start with `user:`.

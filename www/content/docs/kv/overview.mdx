@@ -1,0 +1,30 @@
+---
+title: KV Overview
+description: Visual interface for managing KV data during development.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare gives you a visual interface for managing your Workers KV data during local development.
+
+## Features
+
+- Browse all keys in a namespace
+- View and edit values (text, JSON, binary)
+- Set TTL (time-to-live) on keys
+- Bulk delete keys
+- Search and filter keys by prefix
+
+## Binding Configuration
+
+Localflare reads your KV bindings from `wrangler.toml` automatically. Make sure your KV namespace is configured:
+
+```toml title="wrangler.toml"
+[[kv_namespaces]]
+binding = "MY_KV"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
+
+<Callout type="info">
+Run `wrangler dev` before starting Localflare so the local KV store is initialized.
+</Callout>

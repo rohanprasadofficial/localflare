@@ -1,0 +1,75 @@
+---
+title: Requirements & Compatibility
+description: System requirements and supported project types.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Localflare requires a `wrangler.toml` file in your project root. Without it, Localflare cannot detect bindings or start the local development environment.
+</Callout>
+
+## System Requirements
+
+| Requirement | Version |
+| --- | --- |
+| Node.js | 18.0.0 or higher |
+| Wrangler | Latest version recommended |
+| OS | macOS, Linux, Windows |
+
+## Supported Project Types
+
+| Project Type | Support Level | Mode |
+| --- | --- | --- |
+| Standard Workers | Full | Default |
+| Hono | Full | Default |
+| Remix (on Workers) | Full | Default |
+| Astro (on Workers) | Full | Default |
+| SvelteKit (on Workers) | Full | Default |
+| Next.js (OpenNext) | Full | Attach Mode |
+| Nuxt (on Workers) | Full | Attach Mode |
+| Any custom dev server | Full | Attach Mode |
+
+## Not Supported
+
+- Projects without a `wrangler.toml` file
+- Cloudflare Pages Functions (legacy)
+- Workers using the deprecated `webpack` build type
+- Projects using `wrangler pages dev` exclusively
+
+## How to Check Compatibility
+
+- Verify you have a `wrangler.toml` in your project root
+- Confirm at least one binding (D1, KV, R2, Queue, or Durable Object) is configured
+- Run `npx wrangler dev` to ensure your project starts successfully before using Localflare
+- If `wrangler dev` works, Localflare's Default Mode will work
+
+## Choosing the Right Mode
+
+### Default Mode
+
+Use Default Mode when your project runs with `wrangler dev` directly. Localflare will start wrangler for you and attach to it automatically.
+
+```bash title="Terminal"
+npx localflare
+```
+
+This is the recommended mode for most projects including standard Workers, Hono, Remix, Astro, and SvelteKit.
+
+### Attach Mode
+
+Use Attach Mode when you have a custom dev server or a framework that manages its own wrangler process (like OpenNext or Nuxt).
+
+```bash title="Terminal"
+# Start your dev server first
+npm run dev
+
+# Then attach Localflare to the running wrangler process
+npx localflare attach
+```
+
+Attach Mode connects to an already-running wrangler process instead of starting a new one. This is useful when:
+
+- Your framework wraps `wrangler dev` with its own configuration
+- You need custom wrangler flags that Localflare doesn't expose
+- You want to use Localflare alongside an existing dev workflow

@@ -1,0 +1,33 @@
+---
+title: D1 Overview
+description: Visual interface for D1 databases during local development.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Localflare gives you a visual interface for interacting with your D1 databases during local development. Write queries, browse tables, and edit data without leaving the dashboard.
+
+## Features
+
+| Feature | Description |
+| --- | --- |
+| SQL Editor | Write and execute SQL queries with syntax highlighting |
+| Table Browser | View all tables, columns, and row counts |
+| Data Editing | Insert, update, and delete rows inline |
+| Schema Viewer | Inspect table schemas and indexes |
+| Export | Export query results as CSV or JSON |
+
+## Binding Configuration
+
+Localflare reads your D1 bindings from `wrangler.toml` automatically. Make sure your D1 database is configured:
+
+```toml title="wrangler.toml"
+[[d1_databases]]
+binding = "DB"
+database_name = "my-database"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+<Callout type="info">
+Run `wrangler dev` before starting Localflare so the local D1 database is initialized.
+</Callout>

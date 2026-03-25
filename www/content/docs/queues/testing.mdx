@@ -1,0 +1,49 @@
+---
+title: Testing Messages
+description: Send test messages to verify consumer logic.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Send test messages to your queues to verify that your consumer logic handles them correctly.
+
+<Steps>
+<Step>
+### Select a queue
+
+Choose the target queue from the list of producer bindings.
+</Step>
+<Step>
+### Enter message body
+
+Write the message payload as JSON in the editor.
+</Step>
+<Step>
+### Click Send
+
+Click the **Send Message** button to publish the message to the queue.
+</Step>
+<Step>
+### Monitor processing
+
+Switch to the consumer view to watch your worker process the message.
+</Step>
+</Steps>
+
+## Example Message
+
+```json
+{
+  "type": "order.created",
+  "data": {
+    "orderId": "abc-123",
+    "amount": 49.99,
+    "currency": "USD"
+  }
+}
+```
+
+<Callout type="info">
+Because Localflare shares bindings with your running worker, messages sent from the dashboard are processed by your actual consumer code -- no mocking required.
+</Callout>

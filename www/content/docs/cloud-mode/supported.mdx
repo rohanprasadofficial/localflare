@@ -1,0 +1,59 @@
+---
+title: Supported Services
+description: Cloud Mode capabilities through Cloudflare APIs.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## D1 Databases
+
+Cloud Mode gives you full access to your production D1 databases through the Cloudflare REST API. You can:
+
+- List all databases on your account
+- Browse tables and inspect schemas
+- Run SQL queries (both read and write)
+- Insert, update, and delete rows inline
+- Export query results
+
+## KV Namespaces
+
+Access your live KV namespaces with full read/write support:
+
+- List all namespaces on your account
+- Browse keys with prefix filtering
+- Read values (text, JSON, and binary)
+- Write and update key-value pairs
+- Delete keys
+- View key metadata and expiration
+
+## R2 Buckets
+
+Browse and manage objects in your production R2 buckets:
+
+- List all buckets on your account
+- Browse objects with prefix navigation
+- Upload files directly from the dashboard
+- Download objects
+- Delete objects
+- View object metadata (size, etag, content type)
+
+<Callout type="info">
+R2 Cloud Mode uses the S3-compatible API with SigV4 request signing. This requires separate R2 API credentials — see the [Setup guide](/docs/cloud-mode/setup#r2-access-keys-optional) for details.
+</Callout>
+
+## Queues
+
+View your Cloudflare Queues configuration:
+
+- List all queues on your account
+- View queue settings and consumers
+- Inspect producer and consumer configuration
+
+## Not Yet Supported
+
+The following services are not yet available in Cloud Mode:
+
+- **Durable Objects** — Coming soon. Durable Objects require a WebSocket connection to the runtime, which is not available through the REST API.
+- **Network Inspector** — The network inspector captures traffic from the local wrangler process and is not applicable in Cloud Mode.
+- **Analytics Engine** — Not yet implemented.
+- **Vectorize** — Not yet implemented.

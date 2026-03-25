@@ -1,0 +1,5 @@
+{
+  "title": "CLI Reference",
+  "icon": "terminal",
+  "pages": ["index", "commands", "attach-mode", "options", "examples"]
+}

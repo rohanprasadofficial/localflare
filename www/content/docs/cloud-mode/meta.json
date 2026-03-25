@@ -1,0 +1,5 @@
+{
+  "title": "Cloud Mode",
+  "icon": "globe",
+  "pages": ["index", "overview", "setup", "supported", "architecture"]
+}

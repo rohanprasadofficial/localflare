@@ -1,0 +1,53 @@
+---
+title: Quick Start
+description: Get up and running in seconds.
+icon: zap
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Get up and running in seconds with these simple steps.
+
+<Steps>
+<Step>
+### Navigate to your Worker project
+
+Go to the directory containing your wrangler.toml file.
+</Step>
+<Step>
+### Run Localflare
+
+```bash
+npx localflare
+```
+</Step>
+<Step>
+### Dashboard opens automatically
+
+The dashboard opens at `studio.localflare.dev`.
+</Step>
+</Steps>
+
+```bash title="Terminal"
+cd my-worker-project
+npx localflare
+
+# Output:
+# ⚡ Localflare
+# Local Cloudflare Development Dashboard
+#
+# 👀 Detected: /path/to/wrangler.toml
+# 🔗 Linking bindings:
+#    - DB (D1)
+#    - CACHE (KV)
+#    - BUCKET (R2)
+#
+# ✓ Development environment is running!
+# YOUR APP:   http://localhost:8787
+# API:        http://localhost:8787/__localflare/*
+```
+
+<Callout type="info">
+Localflare automatically detects all bindings from your `wrangler.toml` file. See **CLI Commands** for all options including `attach` mode for custom dev workflows.
+</Callout>

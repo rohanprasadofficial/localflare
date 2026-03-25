@@ -1,0 +1,90 @@
+---
+title: Attach Mode
+description: Run the Localflare API as a standalone worker alongside your dev server.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+Attach mode lets you run the Localflare API worker independently, connecting to an already-running dev server. This is useful when you have a custom dev pipeline or a framework that manages `wrangler dev` for you.
+
+<Callout type="warn">
+Both your dev server and Localflare must share the same `.wrangler/state` directory for bindings to stay in sync. If they use different state directories, changes made in the dashboard won't be reflected in your worker and vice versa.
+</Callout>
+
+## When to Use Attach Mode
+
+- **OpenNext** projects where the framework controls the wrangler process
+- **Nuxt** with Cloudflare presets that run their own dev server
+- **Custom pipelines** that already invoke `wrangler dev` with specific flags
+- Any setup where you cannot let Localflare manage the wrangler process directly
+
+## How It Works
+
+<Steps>
+<Step>
+### Start your dev server
+
+Run your framework's dev command in one terminal. This starts `wrangler dev` (or equivalent) with your worker.
+
+```bash title="Terminal 1"
+npm run dev
+```
+</Step>
+<Step>
+### Start Localflare in attach mode
+
+In a second terminal, run `localflare attach` pointing to the same project.
+
+```bash title="Terminal 2"
+localflare attach
+```
+</Step>
+<Step>
+### Shared state directory
+
+Localflare reads the same `.wrangler/state` directory your dev server writes to, giving it access to all your D1, KV, R2, Durable Object, and Queue bindings.
+</Step>
+<Step>
+### Dashboard connects
+
+The Localflare dashboard opens in your browser and connects to the attach-mode API, letting you inspect and modify bindings in real time.
+</Step>
+</Steps>
+
+## Usage
+
+```bash title="Terminal"
+# Attach with defaults (auto-detect wrangler.toml)
+localflare attach
+
+# Attach with a specific config
+localflare attach ./apps/worker/wrangler.toml
+
+# Attach on a custom port
+localflare attach --port 9000
+```
+
+## Options
+
+| Option | Default | Description |
+|---|---|---|
+| `--port` | `8788` | Port for the Localflare API worker |
+| `--no-open` | — | Don't open the dashboard in the browser |
+| `--dev` | — | Connect the dashboard to the local dev server instead of production |
+
+## Example: OpenNext Project
+
+```bash title="Terminal 1"
+# Start the OpenNext dev server (manages wrangler internally)
+npx open-next dev
+```
+
+```bash title="Terminal 2"
+# Attach Localflare to the same project
+localflare attach ./wrangler.json
+```
+
+<Callout type="info">
+The key requirement is that both processes share the same `.wrangler/state` directory. If your framework writes state to a non-default location, use `--persist-to` to align paths.
+</Callout>

@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "fumadocs-ui/css/solar.css";
+@import "fumadocs-ui/css/preset.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-fd-primary: #EF5F00;
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-background: #FEFCFB;
+  --animate-dash: dash 3s linear infinite;
+}
+
+@theme inline {
+  --font-sans: 'Geist Variable', sans-serif;
+  --font-mono: 'Geist Mono Variable', monospace;
+}
+
+@keyframes dash {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@utility bg-gradient-radial {
+  background: radial-gradient(var(--tw-gradient-stops));
+}
+
+@utility bg-dot-pattern {
+  background-image: radial-gradient(circle, #ffffff06 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@layer base {
+  * {
+    @apply border-fd-border;
+  }
+
+  body {
+    @apply font-sans;
+  }
+
+  html {
+    @apply scroll-smooth selection:bg-fd-foreground selection:text-fd-background;
+  }
+
+  img, svg, iframe {
+    @apply select-none;
+  }
+
+  figure.shiki ::selection {
+    background-color: rgba(255, 255, 255, 0.05);
+    -webkit-text-fill-color: currentColor;
+    color: currentColor;
+  }
+
+  code {
+    @apply selection:bg-[#00000026] dark:selection:bg-[#ffffff26] selection:text-current;
+  }
+}
+
+/* ── Fumadocs layout overrides ──────────────── */
+
+#nd-docs-layout #nd-page:before {
+  @apply shadow-none bg-white border-[#E0E0E0];
+}
+
+/* Light mode */
+html:not(.dark) {
+  & #nd-sidebar [data-active="true"] {
+    background-color: #FFF7ED;
+    color: #EF5F00;
+  }
+
+  & #nd-sidebar[data-collapsed='true'] {
+    @apply bg-white;
+  }
+
+  & #nd-page .bg-fd-secondary {
+    @apply bg-fd-background;
+  }
+
+  & [style*="--callout-color"] {
+    @apply bg-fd-background shadow-none;
+  }
+
+  & .prose table {
+    @apply bg-fd-background;
+  }
+
+  & figure.shiki {
+    border-color: rgba(255, 255, 255, 0.1);
+
+    & > div:first-child {
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    & button:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+.dark {
+  --color-fd-primary: #FF801F;
+  --color-fd-primary-foreground: #ffffff;
+
+  & #nd-sidebar [data-active="true"] {
+    background-color: #1E160F;
+    color: #FF801F;
+  }
+
+  & #nd-docs-layout #nd-page:before {
+    @apply shadow-xl border-fd-border bg-fd-article;
+  }
+}

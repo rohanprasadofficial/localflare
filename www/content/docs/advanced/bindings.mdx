@@ -1,0 +1,41 @@
+---
+title: Supported Bindings
+description: All Cloudflare bindings supported by Localflare.
+---
+
+Localflare supports all major Cloudflare Worker bindings. Each binding type gets a dedicated dashboard panel with features tailored to that service.
+
+## Binding Support
+
+| Binding | Support | Dashboard Features |
+| --- | --- | --- |
+| D1 | Full | SQL editor, table browser, data CRUD |
+| KV | Full | Key browser, value editor, bulk operations |
+| R2 | Full | File browser, upload/download, metadata |
+| Durable Objects | Full | Instance listing, state inspection |
+| Queues | Full | Send messages (actually processed!) |
+| Service Bindings | Full | Automatic proxying |
+
+## D1
+
+Localflare provides a complete database management interface for D1. Browse tables, run arbitrary SQL, and edit rows inline. Multiple databases are supported — switch between them using the binding selector.
+
+## KV
+
+The KV panel lets you browse all keys in a namespace, view and edit values, and manage metadata. Supports text, JSON, and binary values. Bulk operations let you delete multiple keys at once.
+
+## R2
+
+The R2 file browser provides a familiar file-manager experience. Navigate folders (prefixes), upload files by drag-and-drop, download objects, and inspect metadata like content type, size, and etag.
+
+## Durable Objects
+
+List all Durable Object instances, inspect their stored state, and view alarm schedules. Localflare connects to the local miniflare runtime to enumerate active instances.
+
+## Queues
+
+Send messages to your queues directly from the dashboard. Messages are routed to your Worker's queue handler and actually processed — making it easy to test queue consumers during development.
+
+## Service Bindings
+
+Localflare automatically discovers service bindings and proxies requests between Workers. No additional configuration is needed.

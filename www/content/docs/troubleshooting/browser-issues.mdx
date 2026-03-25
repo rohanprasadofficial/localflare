@@ -1,0 +1,80 @@
+---
+title: Browser Issues
+description: Fix browser connectivity issues with Localflare dashboard.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+The Localflare dashboard at `studio.localflare.dev` connects to `localhost` to communicate with your local development server. Some browsers block or restrict these mixed-content requests by default.
+
+## Chrome
+
+<Callout type="warn">
+Chrome may block requests from an HTTPS page (`studio.localflare.dev`) to HTTP localhost endpoints. This can cause the dashboard to fail to load bindings.
+</Callout>
+
+<Steps>
+<Step>
+### Open Chrome Flags
+
+Navigate to `chrome://flags` in your address bar.
+</Step>
+<Step>
+### Find the Insecure Origins Setting
+
+Search for **Insecure origins treated as secure**.
+</Step>
+<Step>
+### Add Localhost
+
+Add `http://localhost:8787` (or your custom port) to the list.
+</Step>
+<Step>
+### Relaunch Chrome
+
+Click **Relaunch** to apply the changes.
+</Step>
+</Steps>
+
+## Safari
+
+Safari requires HTTPS for localhost connections when initiated from an HTTPS page. Install `mkcert` to generate trusted local certificates:
+
+```bash title="Terminal"
+brew install mkcert
+mkcert -install
+mkcert localhost
+```
+
+## Brave
+
+Brave's Shields feature can block mixed-content requests. You have two options:
+
+### Option 1: Install mkcert (Recommended)
+
+Install `mkcert` and generate local certificates as described in the Safari section above. This is the cleanest solution.
+
+### Option 2: Disable Shields for the Dashboard
+
+<Steps>
+<Step>
+### Open the Dashboard
+
+Navigate to `studio.localflare.dev` in Brave.
+</Step>
+<Step>
+### Click the Shields Icon
+
+Click the Brave Shields icon in the address bar.
+</Step>
+<Step>
+### Disable Shields
+
+Toggle Shields off for this site. This allows mixed-content requests to localhost.
+</Step>
+</Steps>
+
+## Firefox
+
+Firefox generally works without any additional configuration. It permits HTTPS pages to make requests to `localhost` by default. If you experience issues, check that no browser extensions are blocking the requests.

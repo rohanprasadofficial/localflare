@@ -1,0 +1,25 @@
+---
+title: Cloud Mode Overview
+description: Switch between local and live Cloudflare environments.
+---
+
+Localflare features a Local/Remote toggle in the dashboard sidebar that lets you switch between your local development environment and your live Cloudflare account. When you switch to Cloud Mode, the dashboard connects directly to Cloudflare's APIs — no wrangler process needed.
+
+## Why Cloud Mode?
+
+- **Inspect production D1 databases** — Run queries, browse tables, and check data in your live databases
+- **Browse R2 buckets** — View, upload, and download files stored in production R2
+- **Check KV namespaces** — Read and write keys in your live KV stores
+- **Monitor Queues** — View queue configuration and status
+- **Compare local and production data** — Toggle between modes to spot differences
+
+## Key Features
+
+| Feature | Local Mode | Cloud Mode |
+| --- | --- | --- |
+| D1 Databases | Full read/write | Full read/write via API |
+| KV Namespaces | Full read/write | Full read/write via API |
+| R2 Buckets | Full read/write | Full read/write via S3 API |
+| Queues | Send & consume | View configuration |
+| Durable Objects | Full access | Coming soon |
+| Network Inspector | Real-time | Not available (local only) |
