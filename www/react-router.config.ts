@@ -23,7 +23,8 @@ export default {
     const docSlugs = getDocSlugs(contentDir);
     return [
       "/",
-      ...docSlugs.map((slug) => `/docs/${slug}`),
+      "/docs",
+      ...docSlugs.filter(Boolean).map((slug) => `/docs/${slug}`),
     ];
   },
 } satisfies Config;
