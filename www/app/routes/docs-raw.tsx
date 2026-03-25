@@ -1,11 +1,9 @@
 import type { Route } from "./+types/docs-raw";
-import {source} from "~/lib/source"
+import { source } from "~/lib/source";
 
 export async function loader({ params }: Route.LoaderArgs) {
-  // const { source } = await import("~/lib/source");
-
   const slug = params["*"] || "";
-  const slugs = slug.split("/").filter((v) => v.length > 0);
+  const slugs = slug.split("/").filter(Boolean);
   const page = source.getPage(slugs);
 
   if (!page) {
