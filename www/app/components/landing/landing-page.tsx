@@ -92,7 +92,7 @@ export function LandingPage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#0d0d0d]/90 backdrop-blur-sm border-b border-white/5">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#f97316] to-[#ea580c]">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-linear-to-br from-[#f97316] to-[#ea580c]">
               <span className="text-xs font-bold text-white">LF</span>
             </div>
             <span className="text-base font-semibold text-zinc-100">Localflare</span>
