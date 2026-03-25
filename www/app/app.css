@@ -90,7 +90,6 @@ html:not(.dark) {
     @apply bg-fd-background;
   }
 
-  /* Code block overrides for vesper (dark theme in both modes) */
   & figure.shiki {
     border-color: rgba(255, 255, 255, 0.1);
 
@@ -105,7 +104,6 @@ html:not(.dark) {
   }
 }
 
-/* Dark mode */
 .dark {
   --color-fd-primary: #FF801F;
   --color-fd-primary-foreground: #ffffff;
