@@ -9,7 +9,11 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, cpSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { createRequire } from 'node:module'
-import { parseWranglerConfig, type WranglerConfig, type LocalflareManifest } from 'localflare-core'
+import { parseWranglerConfig, resolveWranglerConfig, type WranglerConfig, type LocalflareManifest } from 'localflare-core'
+
+export interface SetupOptions {
+  env?: string
+}
 
 /**
  * Convert Windows paths to POSIX-style (forward slashes)
@@ -190,7 +194,7 @@ script_name = "${userWorkerName}"
  * Setup the .localflare directory with shadow config and worker
  * @param isPrimary - If true, localflare-api runs as primary worker and proxies to user's worker
  */
-export function setupLocalflareDir(userConfigPath: string, isPrimary: boolean = true): {
+export function setupLocalflareDir(userConfigPath: string, isPrimary: boolean = true, options: SetupOptions = {}): {
   shadowConfigPath: string
   manifest: LocalflareManifest
 } {
@@ -202,8 +206,9 @@ export function setupLocalflareDir(userConfigPath: string, isPrimary: boolean = 
     mkdirSync(localflareDir, { recursive: true })
   }
 
-  // Parse user's config
-  const userConfig = parseWranglerConfig(userConfigPath)
+  // Parse user's config and resolve environment
+  const rawConfig = parseWranglerConfig(userConfigPath)
+  const userConfig = resolveWranglerConfig(rawConfig, options.env)
 
   // Get the pre-built worker path
   const apiWorkerPath = getApiWorkerPath()

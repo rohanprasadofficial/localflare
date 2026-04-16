@@ -9,6 +9,7 @@ export interface WranglerConfig {
   durable_objects?: DurableObjectsConfig
   queues?: QueuesConfig
   vars?: Record<string, string>
+  env?: Record<string, Omit<WranglerConfig, 'env'>>
 }
 
 export interface D1DatabaseConfig {

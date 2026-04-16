@@ -64,6 +64,31 @@ export function parseWranglerConfig(configPath: string): WranglerConfig {
 }
 
 /**
+ * Resolve a wrangler config for a specific environment.
+ * Merges top-level config with env-specific overrides, matching wrangler's behavior:
+ * - Scalars (name, main, etc.) are inherited from top-level unless overridden
+ * - Binding arrays (d1_databases, kv_namespaces, etc.) are replaced entirely by env-specific values
+ * @param config - Parsed wrangler configuration
+ * @param envName - Environment name to resolve (e.g., "nonprod", "prod")
+ * @returns Resolved configuration with env bindings merged in
+ */
+export function resolveWranglerConfig(config: WranglerConfig, envName?: string): WranglerConfig {
+  if (!envName) return config
+
+  if (!config.env?.[envName]) {
+    const available = config.env ? Object.keys(config.env).join(', ') : 'none'
+    throw new Error(
+      `Environment "${envName}" not found in wrangler config. Available: ${available}`
+    )
+  }
+
+  const { env, ...topLevel } = config
+  const envOverrides = env[envName]
+
+  return { ...topLevel, ...envOverrides }
+}
+
+/**
  * Discover and extract all bindings from a wrangler configuration
  * @param config - Parsed wrangler configuration
  * @returns Discovered bindings organized by type

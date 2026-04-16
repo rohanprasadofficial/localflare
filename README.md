@@ -99,6 +99,7 @@ localflare [configPath] [options]
 Options:
   -p, --port <port>        Worker port (default: 8787)
   -v, --verbose            Verbose output
+  --env <env>              Wrangler environment to use (e.g., staging, production)
   --no-open                Don't open browser automatically
   --no-tui                 Disable TUI, use simple console output
   --dev                    Open local dashboard instead of studio.localflare.dev
@@ -110,6 +111,7 @@ localflare attach [configPath] [options]
 
 Options:
   -p, --port <port>        Localflare API port (default: 8788)
+  --env <env>              Wrangler environment to use (e.g., staging, production)
   --no-open                Don't open browser automatically
   --dev                    Open local dashboard instead of studio.localflare.dev
   --persist-to <path>     Persistence directory for D1/KV/R2 data (default: .wrangler/state)
