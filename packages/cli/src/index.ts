@@ -23,6 +23,7 @@ cli
   .option('--dev', 'Open local dashboard (localhost:5174) instead of studio.localflare.dev')
   .option('--no-open', 'Do not open browser automatically')
   .option('--no-tui', 'Disable TUI, use simple console output')
+  .option('--env <env>', 'Wrangler environment to use (e.g., staging, production)')
   .option(
     '--persist-to <path>',
     'Persistence directory for D1/KV/R2 data (default: .wrangler/state)',
@@ -61,7 +62,7 @@ cli
 
     try {
       // Setup .localflare directory with shadow config
-      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, true)
+      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, true, options)
 
       // Display linked bindings
       const bindingLines = formatBindings(manifest)
@@ -231,6 +232,7 @@ cli
   .option('-p, --port <port>', 'Port for Localflare API', { default: 8788 })
   .option('--dev', 'Open local dashboard (localhost:5174) instead of studio.localflare.dev')
   .option('--no-open', 'Do not open browser automatically')
+  .option('--env <env>', 'Wrangler environment to use (e.g., staging, production)')
   .option(
     '--persist-to <path>',
     'Persistence directory for D1/KV/R2 data (default: .wrangler/state)',
@@ -265,7 +267,7 @@ cli
 
     try {
       // Setup .localflare directory (but don't add service binding - standalone mode)
-      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, false) // isPrimary=false
+      const { shadowConfigPath, manifest } = setupLocalflareDir(resolvedConfig, false, options) // isPrimary=false
 
       // Display bindings
       const bindingLines = formatBindings(manifest)

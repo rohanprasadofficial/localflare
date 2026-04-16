@@ -1,4 +1,4 @@
-export { parseWranglerConfig, discoverBindings, getBindingSummary, findWranglerConfig, WRANGLER_CONFIG_FILES } from './config.js'
+export { parseWranglerConfig, resolveWranglerConfig, discoverBindings, getBindingSummary, findWranglerConfig, WRANGLER_CONFIG_FILES } from './config.js'
 export type {
   WranglerConfig,
   DiscoveredBindings,
