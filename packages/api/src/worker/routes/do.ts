@@ -27,6 +27,19 @@ export function createDORoutes() {
     })
   })
 
+  // List all DO instances across all namespaces (fixes Issue #51)
+  app.get('/instances', async (c) => {
+    const manifest = getManifest(c.env)
+    return c.json({
+      instances: [],
+      namespaces: manifest.do.map((doConfig) => ({
+        binding: doConfig.binding,
+        class_name: doConfig.className,
+      })),
+      hint: 'Cannot enumerate arbitrary DO instances directly without stored instance records. Use idFromName() or idFromString().',
+    })
+  })
+
   // Get DO ID from name or validate existing ID
   app.post('/:binding/id', async (c) => {
     const binding = c.req.param('binding')
