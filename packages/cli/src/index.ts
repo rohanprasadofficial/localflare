@@ -8,6 +8,39 @@ import open from 'open'
 import { setupLocalflareDir, formatBindings } from './shadow-config.js'
 import { startTui, type TuiInstance } from './tui/index.js'
 
+/**
+ * Format arguments safely when shell execution is required on Windows
+ */
+function formatArgsForShell(args: string[]): string[] {
+  return args.map((arg) => {
+    if (arg.includes(' ') && !arg.startsWith('"') && !arg.startsWith("'")) {
+      return `"${arg.replace(/"/g, '\\"')}"`
+    }
+    return arg
+  })
+}
+
+/**
+ * Spawn wrangler cross-platform without argument splitting when paths contain spaces.
+ * On Windows, invokes npx.cmd with formatted arguments.
+ * On POSIX (macOS/Linux), invokes npx with shell: false to avoid word-splitting.
+ */
+function spawnWrangler(
+  args: string[],
+  cwd: string,
+  extraOptions: { stdio?: ('inherit' | 'pipe')[] } = {}
+) {
+  const isWindows = process.platform === 'win32'
+  const executable = isWindows ? 'npx.cmd' : 'npx'
+  const sanitizedArgs = isWindows ? formatArgsForShell(args) : args
+
+  return spawn(executable, sanitizedArgs, {
+    cwd,
+    stdio: extraOptions.stdio ?? ['inherit', 'pipe', 'pipe'],
+    shell: isWindows,
+  })
+}
+
 const cli = cac('localflare')
 
 // Parse raw args to extract passthrough args after '--'
@@ -103,10 +136,8 @@ cli
         console.log('')
       }
 
-      const wranglerProcess = spawn('npx', wranglerArgs, {
-        cwd: dirname(resolvedConfig),
+      const wranglerProcess = spawnWrangler(wranglerArgs, dirname(resolvedConfig), {
         stdio: ['inherit', 'pipe', 'pipe'],
-        shell: true,
       })
 
       let started = false
@@ -292,10 +323,8 @@ cli
         '--port', String(apiPort),
       ]
 
-      const wranglerProcess = spawn('npx', wranglerArgs, {
-        cwd: dirname(resolvedConfig),
+      const wranglerProcess = spawnWrangler(wranglerArgs, dirname(resolvedConfig), {
         stdio: ['inherit', 'pipe', 'pipe'],
-        shell: true,
       })
 
       let started = false

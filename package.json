@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.1",
   "scripts": {
+    "test:unit": "node --experimental-strip-types --test \"teste-unit/**/*.test.ts\"",
     "dev": "turbo dev",
     "build": "turbo build",
     "typecheck": "turbo typecheck",
