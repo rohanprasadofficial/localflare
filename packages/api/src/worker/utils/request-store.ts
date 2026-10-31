@@ -50,7 +50,8 @@ function broadcast(event: string, data: unknown) {
     try {
       subscriber(event, data)
     } catch {
-      // Subscriber may have disconnected
+      // Subscriber may have disconnected; remove from set to prevent memory leak
+      subscribers.delete(subscriber)
     }
   }
 }

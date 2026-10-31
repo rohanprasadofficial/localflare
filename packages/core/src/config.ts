@@ -47,7 +47,6 @@ export function parseWranglerConfig(configPath: string): WranglerConfig {
     case ".toml":
       return parseToml(content) as WranglerConfig;
     case ".json":
-      return JSON.parse(content) as WranglerConfig;
     case ".jsonc":
       return parseJsonc.parse(content) as WranglerConfig;
     default: {

@@ -77,10 +77,10 @@ export function createKVRoutes() {
         return c.json({ error: 'Key not found' }, 404)
       }
 
-      // For arrayBuffer, convert to base64
+      // For arrayBuffer, convert to base64 safely without call stack overflow
       let responseValue = value
       if (type === 'arrayBuffer' && value instanceof ArrayBuffer) {
-        responseValue = btoa(String.fromCharCode(...new Uint8Array(value)))
+        responseValue = Buffer.from(value).toString('base64')
       }
 
       return c.json({
